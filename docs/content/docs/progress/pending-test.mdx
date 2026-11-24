@@ -5,6 +5,11 @@ description: 当前项目已实现功能的手工验证清单与未确认边界
 
 # 待测试
 
+## NewAPI 网关任务插件
+
+- 新增 `custom-plugins/newapi-gateway-tasks.yingce-plugin` 及对应 manifest，通过网关提交 RunningHub 图片和视频任务，轮询状态并读取签名素材；参考素材总数限制为四个。
+- 待真实网关联调：导入插件并配置网关 API Key，分别生成图片和视频，确认参考素材上传、失败原因提示及临时签名结果下载。
+
 ## 页面首次加载与后台预取
 
 - Bun 构建下的 Vite helper 已适配空白和 Error 表达式差异；镜像构建前执行预加载专项测试。待确认正式镜像中样式加载失败后可重试，共享样式仍能等待完成。

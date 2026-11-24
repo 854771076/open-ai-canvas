@@ -59,7 +59,16 @@ const timeoutFields: PolicyField[] = [
 ];
 
 const agentFields: PolicyField[] = [
-    { group: "task", name: "browserAgentEnabled", label: "浏览器 Worker", extra: "开启后，新会话优先使用浏览器编排，减少服务端 Agent 排队；服务端执行保持可用。关闭仅影响新会话，已有浏览器会话仍需打开页面继续。", unit: "", min: 0, max: 1, toggle: true },
+    {
+        group: "task",
+        name: "browserAgentEnabled",
+        label: "浏览器 Worker",
+        extra: "开启后，新会话优先由浏览器 Worker 编排，不占用服务端 Node Agent 会话；模型和工具仍由后端执行。需保持页面打开，此开关不会禁用服务端执行；关闭仅影响新会话。",
+        unit: "",
+        min: 0,
+        max: 1,
+        toggle: true,
+    },
     { group: "resource", name: "agentHistoryMB", label: "每账号 Agent 历史容量", extra: "包括会话、消息、事件和撤销快照。调低不会删除历史；购买文件空间不改变此上限。", unit: "MiB", max: 999_999 },
     {
         group: "task",
@@ -519,7 +528,7 @@ export default function RuntimePolicySettingsPage() {
 
                     {policySections.map((section) => (
                         <div key={section.id} id={section.id} className="admin-settings-anchor admin-runtime-policy-anchor">
-                            <PolicySection {...section} />
+                            <PolicySection {...section} browserAgentOnly={savedSetting.browserAgentOnly} />
                         </div>
                     ))}
                 </div>
@@ -528,7 +537,7 @@ export default function RuntimePolicySettingsPage() {
     );
 }
 
-function PolicySection({ icon, title, description, fields, status }: PolicySectionDefinition) {
+function PolicySection({ icon, title, description, fields, status, browserAgentOnly }: PolicySectionDefinition & { browserAgentOnly: boolean }) {
     return (
         <SettingsSectionCard icon={icon} title={title} description={description} status={status}>
             <div className="admin-runtime-policy-field-grid">
@@ -536,7 +545,12 @@ function PolicySection({ icon, title, description, fields, status }: PolicySecti
                     const inputId = `admin-runtime-policy-${field.group}-${field.name}`;
                     const min = field.min ?? 1;
                     return (
-                        <Form.Item key={`${field.group}.${field.name}`} label={field.label} htmlFor={inputId} extra={field.extra}>
+                        <Form.Item
+                            key={`${field.group}.${field.name}`}
+                            label={field.label}
+                            htmlFor={inputId}
+                            extra={field.name === "browserAgentEnabled" && browserAgentOnly ? "当前部署仅使用浏览器 Worker，此开关由部署配置锁定。需保持页面打开；模型、工具和生成任务仍由 Go 后端执行。" : field.extra}
+                        >
                             <div className="admin-runtime-policy-number-control">
                                 <Form.Item
                                     noStyle
@@ -551,11 +565,17 @@ function PolicySection({ icon, title, description, fields, status }: PolicySecti
                                               ]
                                     }
                                 >
-                                    {field.toggle ? <Switch id={inputId} aria-label={field.label} /> : <InputNumber id={inputId} min={min} max={field.max} precision={0} aria-label={field.label} />}
+                                    {field.toggle ? (
+                                        <Switch id={inputId} aria-label={field.label} disabled={browserAgentOnly && field.name === "browserAgentEnabled"} />
+                                    ) : (
+                                        <InputNumber id={inputId} min={min} max={field.max} precision={0} aria-label={field.label} />
+                                    )}
                                 </Form.Item>
-                                <span className="admin-runtime-policy-number-unit" aria-hidden="true">
-                                    {field.unit}
-                                </span>
+                                {!field.toggle && (
+                                    <span className="admin-runtime-policy-number-unit" aria-hidden="true">
+                                        {field.unit}
+                                    </span>
+                                )}
                             </div>
                         </Form.Item>
                     );

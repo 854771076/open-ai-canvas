@@ -5,6 +5,12 @@ description: 当前项目已实现功能的手工验证清单与未确认边界
 
 # 待测试
 
+## 视频媒体探测与图层拆分协议
+
+- 修复 ffprobe 查询节名，使用 `stream_side_data_list` 读取旋转信息，保留视频宽高、时长和容器标签；补充真实视频及旋转视频回归测试。
+- 图层拆分协议测试同步当前插件的 Seedream 5.5 端点。
+- 待部署验收：上传带 90° 旋转信息的视频，确认素材尺寸按显示方向记录，时间轴合成保持正确画幅。
+
 ## NewAPI 网关任务插件
 
 - 新增 `custom-plugins/newapi-gateway-tasks.yingce-plugin` 及对应 manifest，通过网关提交 RunningHub 图片和视频任务，轮询状态并读取签名素材；参考素材总数限制为四个。

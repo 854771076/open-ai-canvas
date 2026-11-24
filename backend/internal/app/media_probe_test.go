@@ -71,6 +71,37 @@ func TestParseMediaProbeOutput(t *testing.T) {
 	}
 }
 
+func TestProbeMediaFileReadsVideoAndRotation(t *testing.T) {
+	requireFFmpegTools(t)
+	source := filepath.Join(t.TempDir(), "source.mp4")
+	writeTestVideo(t, source, 320, 240, map[string]string{"AIGC": "probe-test"})
+	rotated := filepath.Join(t.TempDir(), "rotated.mp4")
+	if output, err := exec.Command("ffmpeg", "-v", "error", "-y", "-i", source,
+		"-c", "copy", "-metadata:s:v:0", "rotate=90", rotated).CombinedOutput(); err != nil {
+		t.Fatalf("rotate test video: %v %s", err, output)
+	}
+	for _, tc := range []struct {
+		name, path    string
+		width, height int
+	}{
+		{"original", source, 320, 240},
+		{"rotated", rotated, 240, 320},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			info, err := probeMediaFile(context.Background(), tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if info.Width != tc.width || info.Height != tc.height || info.DurationMs < 900 || info.DurationMs > 1100 {
+				t.Fatalf("probe = %dx%d %dms, want %dx%d ~1000ms", info.Width, info.Height, info.DurationMs, tc.width, tc.height)
+			}
+			if tc.name == "original" && mediaProbeTag(info.Tags, "AIGC") != "probe-test" {
+				t.Fatalf("missing provenance tag: %#v", info.Tags)
+			}
+		})
+	}
+}
+
 func TestStoreTaskMediaFileRecordsVideoDimensions(t *testing.T) {
 	requireFFmpegTools(t)
 	s, db := newMediaRecoveryTestService(t)

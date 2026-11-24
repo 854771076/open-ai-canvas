@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1.7
 
 # 构建 Vite 前端产物。
-FROM --platform=$BUILDPLATFORM oven/bun:1.3.9 AS web-build
+FROM --platform=$BUILDPLATFORM node:22.19-bookworm-slim AS web-build
+
+COPY --from=oven/bun:1.3.9 /usr/local/bin/bun /usr/local/bin/bun
 
 WORKDIR /app/web
 COPY web/package.json web/bun.lock ./
@@ -23,7 +25,7 @@ ENV CANVAS_BUILD_VERSION=${BUILD_VERSION}
 ENV CANVAS_BUILD_COMMIT=${BUILD_COMMIT}
 ENV CANVAS_BUILD_TIME=${BUILD_TIME}
 # 生产镜像只构建云端工作台前端；Agent Runtime 在后端 Worker 中运行。
-RUN bun test test/module-preload.test.ts && bun --bun ./node_modules/vite/bin/vite.js build
+RUN bun test test/module-preload.test.ts && node ./node_modules/vite/bin/vite.js build
 
 # 运行镜像：nginx 托管静态前端，并在 Compose 中把 /api 转发到后端服务。
 FROM nginx:1.27-alpine

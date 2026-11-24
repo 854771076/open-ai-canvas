@@ -92,42 +92,50 @@ test("后台最多三路，打开预取中的页面时提升排队资源优先�
     }
 });
 
-test("真实 Vite helper 的预热失败沿用可取消的恢复事件，不执行原生 import", async () => {
-    const vite = readFileSync(resolve(import.meta.dir, "../node_modules/vite/dist/node/chunks/node.js"), "utf8");
-    const start = vite.indexOf("function preload(baseModule, deps, importerUrl) {");
-    const end = vite.indexOf("\nfunction getPreloadCode", start);
-    expect(start).toBeGreaterThan(0);
-    expect(end).toBeGreaterThan(start);
-    const transform = resilientPreload().transform as Function;
-    const transformed = transform(vite.slice(start, end), "\0vite/preload-helper.js").code.replace('import { PageResourceError, warmPreloadResources } from "@/lib/module-preload";', "").replaceAll("import.meta", "importMeta");
-    const events: Event[] = [];
-    const failure = new Error("asset 404");
-    let cancel = true;
-    let imported = false;
-    const preload = runInNewContext(`${transformed}; preload`, {
-        Event,
-        PageResourceError,
-        URL,
-        importMeta: { url: "https://assets.example/entry.js" },
-        assetsURL: (dep: string) => dep,
-        warmPreloadResources: async () => {
-            throw failure;
-        },
-        window: {
-            dispatchEvent: (event: Event) => {
-                events.push(event);
-                if (cancel) event.preventDefault();
+for (const runtime of ["source", "bun"])
+    test(`真实 Vite helper (${runtime}) 的预热失败沿用可取消的恢复事件，不执行原生 import`, async () => {
+        const vite = readFileSync(resolve(import.meta.dir, "../node_modules/vite/dist/node/chunks/node.js"), "utf8");
+        const start = vite.indexOf("function preload(baseModule, deps, importerUrl) {");
+        const end = vite.indexOf("\nfunction getPreloadCode", start);
+        expect(start).toBeGreaterThan(0);
+        expect(end).toBeGreaterThan(start);
+        const transform = resilientPreload().transform as Function;
+        const source = vite.slice(start, end);
+        const helper =
+            runtime === "bun"
+                ? runInNewContext(`${source.replaceAll("import.meta", "importMeta")}; preload`)
+                      .toString()
+                      .replaceAll("importMeta", "import.meta")
+                : source;
+        const transformed = transform(helper, "\0vite/preload-helper.js").code.replace('import { PageResourceError, warmPreloadResources } from "@/lib/module-preload";', "").replaceAll("import.meta", "importMeta");
+        const events: Event[] = [];
+        const failure = new Error("asset 404");
+        let cancel = true;
+        let imported = false;
+        const preload = runInNewContext(`${transformed}; preload`, {
+            Event,
+            PageResourceError,
+            URL,
+            importMeta: { url: "https://assets.example/entry.js" },
+            assetsURL: (dep: string) => dep,
+            warmPreloadResources: async () => {
+                throw failure;
             },
-        },
+            window: {
+                dispatchEvent: (event: Event) => {
+                    events.push(event);
+                    if (cancel) event.preventDefault();
+                },
+            },
+        });
+        const nativeImport = async () => {
+            imported = true;
+        };
+        await preload(nativeImport, ["./missing.js"]);
+        expect(events[0].type).toBe("vite:preloadError");
+        expect((events[0] as Event & { payload: unknown }).payload).toBe(failure);
+        expect(imported).toBe(false);
+        cancel = false;
+        await expect(preload(nativeImport, ["./missing.js"])).rejects.toThrow("asset 404");
+        expect(imported).toBe(false);
     });
-    const nativeImport = async () => {
-        imported = true;
-    };
-    await preload(nativeImport, ["./missing.js"]);
-    expect(events[0].type).toBe("vite:preloadError");
-    expect((events[0] as Event & { payload: unknown }).payload).toBe(failure);
-    expect(imported).toBe(false);
-    cancel = false;
-    await expect(preload(nativeImport, ["./missing.js"])).rejects.toThrow("asset 404");
-    expect(imported).toBe(false);
-});

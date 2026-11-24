@@ -113,6 +113,8 @@ jobs:
       IMAGE: ghcr.io/${{ needs.prepare.outputs.owner }}/${{ matrix.image }}
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        if: matrix.arch == 'multi'
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:

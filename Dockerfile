@@ -1,9 +1,11 @@
 # syntax=docker/dockerfile:1.7
 
 # 构建 Vite 前端产物。
+FROM --platform=$BUILDPLATFORM oven/bun:1.3.9 AS bun-build
+
 FROM --platform=$BUILDPLATFORM node:22.19-bookworm-slim AS web-build
 
-COPY --from=oven/bun:1.3.9 /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=bun-build /usr/local/bin/bun /usr/local/bin/bun
 
 WORKDIR /app/web
 COPY web/package.json web/bun.lock ./

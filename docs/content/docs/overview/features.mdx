@@ -5,6 +5,10 @@ description: 当前项目已实现的核心工作台能力与使用入口
 
 # 功能清单
 
+## 管理 Agent 接入
+
+后台「系统设置 → Agent 接入」提供远程 HTTP MCP 和配套 Skill，覆盖后台管理模块，支持 Canvas/NewAPI 浏览器登录授权及可撤销 Token。Agent 按“发现、描述、执行”使用操作，普通写入按权限执行，危险操作需要管理员网页确认。Skill 随服务版本提供公开 ZIP、SHA256 和下载更新接口，凭据独立存放。详见 [后台管理 MCP 与 Skill](/docs/backend/admin-assistant)。
+
 ## 可选浏览器 Agent
 
 部署另支持 `CANVAS_AGENT_BROWSER_ONLY=true`：仅允许浏览器编排，管理页锁定浏览器开关，不启动 Node Agent 容器，安装与在线更新均保留此模式。Go 后端任务 Worker 仍处理模型和工具。详见 [仅浏览器 Agent 部署](/docs/overview/browser-agent-deployment)。

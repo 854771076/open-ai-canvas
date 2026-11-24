@@ -223,6 +223,9 @@ func (s *Service) StartWorker() {
 		ticker := time.NewTicker(time.Hour)
 		defer ticker.Stop()
 		for {
+			if err := s.repo.CleanupAssistantTransient(time.Now()); err != nil {
+				slog.Warn("admin assistant transient cleanup failed", "error", err)
+			}
 			if err := s.repo.PurgeClientFailures(time.Now().Add(-14 * 24 * time.Hour)); err != nil {
 				slog.Warn("client failure retention cleanup failed", "error", err)
 			}

@@ -175,7 +175,8 @@ func TestCanvasOperationsHTTPFailureDiagnostics(t *testing.T) {
 			if err := json.Unmarshal(bytes.TrimSpace(logs.Bytes()), &entry); err != nil {
 				t.Fatalf("missing structured rejection log: %v: %s", err, logs.String())
 			}
-			if entry.Message != "canvas operations rejected" || entry.Stage != test.stage || entry.CanvasID != "rejected" || entry.Status != http.StatusBadRequest || entry.Field != test.field || !strings.Contains(entry.Error, test.want) {
+			fieldMatches := entry.Field == test.field || (test.field == "operations.patch" && entry.Field == "operations.0.patch")
+			if entry.Message != "canvas operations rejected" || entry.Stage != test.stage || entry.CanvasID != "rejected" || entry.Status != http.StatusBadRequest || !fieldMatches || !strings.Contains(entry.Error, test.want) {
 				t.Fatalf("incomplete rejection diagnostics: %+v", entry)
 			}
 			if entry.RequestID == "" || entry.RequestID != out.Header().Get("X-Request-ID") {

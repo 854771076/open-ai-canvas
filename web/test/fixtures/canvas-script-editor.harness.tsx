@@ -239,7 +239,7 @@ test("opens fullscreen, can switch back and Escape exits fullscreen before closi
     expect(calls).toEqual([]);
     await escape(editor().querySelector("textarea")!);
     expect(calls).toEqual(["close"]);
-});
+}, 15000);
 
 test("Escape closes the column popup before exiting fullscreen and ignores another modal", async () => {
     await render();

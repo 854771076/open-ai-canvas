@@ -64,6 +64,7 @@ func probeMediaFile(ctx context.Context, path string) (mediaProbeInfo, error) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, mediaProbeTimeout)
 	defer cancel()
+	// 显式选择子节中的旋转字段，避免只选择列表容器时丢失显示矩阵信息。
 	output, err := hideCommandWindow(exec.CommandContext(ctx, bin,
 		"-v", "error", "-select_streams", "v:0",
 		"-show_entries", "stream=width,height:stream_side_data=rotation:format=duration:format_tags",

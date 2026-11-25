@@ -1,5 +1,10 @@
 # CHANGELOG
 ## Unreleased
+- 合并来源：合并 https://github.com/854771076/open-ai-canvas 分支 main（`07aa3ad0`），共同祖先 `eff6905a`。
+- 角色梳妆台：新增梳妆台、梳妆参考与梳妆任务，复用姿势库和素材选择器接入六类图片，支持按角色分页恢复与继续保存；角色形象保存增加版本校验与幂等，形象换图清理旧来源并支持冲突重试；官方梳妆素材支持分类配置与导入选用。
+- Agent：新增浏览器 Worker 双模式执行与独立部署，管理端可接入管理 MCP 与 Skill，并兼容 Codex OAuth 提供复制安装说明。
+- 协议与构建：新增 NewAPI 网关 RunningHub 任务插件；前端镜像改用 Node 执行 Vite 构建，固定 Bun 构建架构并启用跨架构执行；媒体探测显式查询显示旋转字段并修正 ffprobe 节名。
+- 升级说明：数据库 Schema 从 110 升至 111（新增后台管理 Agent 的认证、授权码、刷新重放、调用记录和临时附件表）。升级前请成组备份数据库和后端数据目录（含插件登记表、插件包及 `.settings-key`），再执行 `migrate-schema up` 和 `migrate-schema verify`，同步更新 Web 和 Backend。
 
 ## v1.8.7.2
 - Agent 与存储：新增平台 Agent 热历史池、终态 gzip 冷归档和会话删除/整理接口，回填升级前的历史账本；数据库 Schema 从 109 升至 110。

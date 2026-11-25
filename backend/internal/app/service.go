@@ -151,10 +151,12 @@ type CreateTaskRequest struct {
 }
 
 type TaskListOptions struct {
-	Limit         int
-	ProjectID     string
-	ActiveOnly    bool
-	WorkbenchKind string
+	CharacterAssetID string
+	BeforeTaskID     string
+	Limit            int
+	ProjectID        string
+	ActiveOnly       bool
+	WorkbenchKind    string
 }
 
 func New(repo *repository.Repository, dataDir string) *Service {
@@ -219,6 +221,23 @@ func (s *Service) StartWorker() {
 	s.startInspirationFeedWorker()
 	s.startConsumptionReportWorker()
 	s.startFeishuFeedbackWorker()
+	s.runWorkerLoop(func(ctx context.Context) {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for {
+			if err := s.repo.CleanupAssistantTransient(time.Now()); err != nil {
+				slog.Warn("admin assistant transient cleanup failed", "error", err)
+			}
+			if err := s.repo.PurgeClientFailures(time.Now().Add(-14 * 24 * time.Hour)); err != nil {
+				slog.Warn("client failure retention cleanup failed", "error", err)
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+			}
+		}
+	})
 	go s.syncAgentSessionLimit()
 	s.runWorkerLoop(func(ctx context.Context) {
 		ticker := time.NewTicker(3 * time.Second)
@@ -283,7 +302,7 @@ func (s *Service) Tasks(userID string, limit int) ([]TaskSummary, error) {
 }
 
 func (s *Service) TasksWithOptions(userID string, options TaskListOptions) ([]TaskSummary, error) {
-	tasks, err := s.repo.TasksWithWorkbenchKind(userID, options.Limit, options.ProjectID, options.ActiveOnly, options.WorkbenchKind)
+	tasks, err := s.repo.TasksWithWorkbenchKind(userID, options.Limit, options.ProjectID, options.ActiveOnly, options.WorkbenchKind, repository.TaskIdentityFilter{CharacterAssetID: options.CharacterAssetID, BeforeTaskID: options.BeforeTaskID})
 	if err != nil {
 		return nil, err
 	}

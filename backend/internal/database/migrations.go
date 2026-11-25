@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentSchemaVersion int64 = 110
+const CurrentSchemaVersion int64 = 111
 
 const baselineSchemaChecksum = "sha256:open-ai-canvas-schema-v1-20260830"
 const schemaMigrationAppliedAtIndexChecksum = "sha256:schema-migrations-applied-at-index-v2-20260830"
@@ -398,6 +398,7 @@ var schemaMigrations = []migration{
 		}
 		return reconcileAgentStorageUsage(tx)
 	}},
+	{version: 111, name: "admin_assistant", checksum: "sha256:admin-assistant-v111-20261126", apply: migrateAdminAssistant},
 }
 
 func migrateAPILogGenerationContent(tx *gorm.DB) error {
@@ -734,6 +735,7 @@ var yingceSchemaMigrations = []migration{
 		return tx.AutoMigrate(&model.OfficialAssetRecommendation{}, &model.OfficialAsset{})
 	}},
 	{version: 4, name: "official_recommendation_consent", checksum: "sha256:official-recommendation-consent-v64-20261031", apply: func(tx *gorm.DB) error { return tx.AutoMigrate(&model.OfficialAssetRecommendation{}) }},
+	{version: 5, name: "browser_agent_client_failures", checksum: "sha256:browser-agent-client-failures-v1", apply: func(tx *gorm.DB) error { return tx.AutoMigrate(&model.ClientFailure{}) }},
 }
 
 // migrateDramaCastVoiceLooks 为短剧设定补角色声音（声音库条目与样本音频）和造型（所属角色、造型名、默认适用章节）。

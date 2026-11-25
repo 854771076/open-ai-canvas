@@ -1,0 +1,311 @@
+{
+  "apiVersion": "yingce.plugin/v2",
+  "id": "newapi-gateway-tasks",
+  "name": "NewAPI 网关任务",
+  "version": "1.0.1",
+  "author": "0xfiang",
+  "description": "通过现有 NewAPI 网关调用 RunningHub Krea2 与 MiniMax H3 工作流。",
+  "documentation": "# NewAPI 网关任务\n使用网关 API Key，创建 /v1/tasks/runninghub，查询任务状态并下载签名素材。支持图片、视频和音频参考素材上传。网关负责上游凭证与任务结算。",
+  "permissions": [
+    "generation.run",
+    "media.read"
+  ],
+  "configuration": {
+    "fields": [
+      {
+        "name": "apiKey",
+        "type": "secret",
+        "label": "NewAPI API Key",
+        "required": true
+      }
+    ]
+  },
+  "contributes": {
+    "providers": [
+      {
+        "id": "newapi-runninghub-image",
+        "label": "NewAPI RunningHub Image",
+        "capabilities": [
+          "image"
+        ],
+        "scopes": [
+          "admin.system-channel",
+          "user.custom-channel",
+          "canvas",
+          "creation",
+          "agent"
+        ],
+        "baseUrl": "https://newapi.0xfiang.com",
+        "auth": {
+          "type": "bearer",
+          "field": "apiKey"
+        },
+        "create": {
+          "method": "POST",
+          "path": "/v1/tasks/runninghub",
+          "contentType": "multipart/form-data",
+          "body": {
+            "model": {
+              "$ref": "request.model"
+            },
+            "prompt": {
+              "$ref": "request.prompt"
+            },
+            "aspect_ratio": {
+              "$ref": "request.aspectRatio"
+            },
+            "resolution": {
+              "$ref": "request.resolution"
+            }
+          },
+          "files": [
+            {
+              "name": "image",
+              "source": {
+                "$ref": "request.images"
+              }
+            }
+          ]
+        },
+        "poll": {
+          "method": "GET",
+          "path": "/v1/tasks/{{taskId}}"
+        },
+        "result": {
+          "method": "GET",
+          "path": "/v1/tasks/{{taskId}}/artifacts"
+        },
+        "response": {
+          "taskIdPaths": [
+            "task_id"
+          ],
+          "statusPaths": [
+            "status"
+          ],
+          "messagePaths": [
+            "fail_reason",
+            "error.message"
+          ],
+          "errorPaths": [
+            "error.code"
+          ],
+          "resultEphemeral": true,
+          "images": {
+            "$map": {
+              "from": {
+                "$filter": {
+                  "from": {
+                    "$ref": "response.artifacts"
+                  },
+                  "as": "artifact",
+                  "where": {
+                    "$eq": [
+                      {
+                        "$ref": "artifact.type"
+                      },
+                      "image"
+                    ]
+                  }
+                }
+              },
+              "as": "artifact",
+              "in": {
+                "url": {
+                  "$ref": "artifact.content_url"
+                },
+                "mimeType": {
+                  "$ref": "artifact.mime_type"
+                }
+              }
+            }
+          }
+        },
+        "imageParameters": [
+          {
+            "name": "size",
+            "label": "画幅比例",
+            "type": "string",
+            "binding": "aspectRatio",
+            "encoding": "ratio",
+            "values": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3"
+            ],
+            "default": "1:1"
+          },
+          {
+            "name": "imageResolution",
+            "label": "分辨率",
+            "type": "string",
+            "binding": "resolution",
+            "values": [
+              "1K",
+              "2K"
+            ],
+            "default": "2K"
+          },
+          {
+            "name": "count",
+            "label": "生成数量",
+            "type": "integer",
+            "binding": "imageCount",
+            "min": 1,
+            "max": 1,
+            "default": 1
+          }
+        ]
+      },
+      {
+        "id": "newapi-runninghub-video",
+        "label": "NewAPI RunningHub Video",
+        "capabilities": [
+          "video"
+        ],
+        "scopes": [
+          "admin.system-channel",
+          "user.custom-channel",
+          "canvas",
+          "creation",
+          "agent"
+        ],
+        "baseUrl": "https://newapi.0xfiang.com",
+        "auth": {
+          "type": "bearer",
+          "field": "apiKey"
+        },
+        "create": {
+          "method": "POST",
+          "path": "/v1/tasks/runninghub",
+          "contentType": "multipart/form-data",
+          "body": {
+            "model": {
+              "$ref": "request.model"
+            },
+            "prompt": {
+              "$ref": "request.prompt"
+            },
+            "aspect_ratio": {
+              "$ref": "request.aspectRatio"
+            },
+            "resolution": {
+              "$ref": "request.resolution"
+            },
+            "duration": {
+              "$ref": "request.duration"
+            }
+          },
+          "files": [
+            {
+              "name": "image",
+              "source": {
+                "$ref": "request.images"
+              }
+            },
+            {
+              "name": "video",
+              "source": {
+                "$ref": "request.videos"
+              }
+            },
+            {
+              "name": "audio",
+              "source": {
+                "$ref": "request.audios"
+              }
+            }
+          ]
+        },
+        "poll": {
+          "method": "GET",
+          "path": "/v1/tasks/{{taskId}}"
+        },
+        "result": {
+          "method": "GET",
+          "path": "/v1/tasks/{{taskId}}/artifacts"
+        },
+        "response": {
+          "taskIdPaths": [
+            "task_id"
+          ],
+          "statusPaths": [
+            "status"
+          ],
+          "messagePaths": [
+            "fail_reason",
+            "error.message"
+          ],
+          "errorPaths": [
+            "error.code"
+          ],
+          "resultEphemeral": true,
+          "videos": {
+            "$map": {
+              "from": {
+                "$filter": {
+                  "from": {
+                    "$ref": "response.artifacts"
+                  },
+                  "as": "artifact",
+                  "where": {
+                    "$eq": [
+                      {
+                        "$ref": "artifact.type"
+                      },
+                      "video"
+                    ]
+                  }
+                }
+              },
+              "as": "artifact",
+              "in": {
+                "url": {
+                  "$ref": "artifact.content_url"
+                },
+                "mimeType": {
+                  "$ref": "artifact.mime_type"
+                }
+              }
+            }
+          }
+        },
+        "videoReferences": {
+          "layout": "multipart-references",
+          "token": "参考图{n}",
+          "models": {
+            "minimax-h3-reference-to-video": 4
+          }
+        },
+        "validations": [
+          {
+            "assert": {
+              "$lte": [
+                {
+                  "$len": {
+                    "$concatArrays": [
+                      {
+                        "$ref": "request.images"
+                      },
+                      {
+                        "$ref": "request.videos"
+                      },
+                      {
+                        "$ref": "request.audios"
+                      }
+                    ]
+                  }
+                },
+                4
+              ]
+            },
+            "message": "RunningHub 最多接受四个参考素材"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"os"
@@ -68,6 +69,47 @@ func TestParseMediaProbeOutput(t *testing.T) {
 	}
 	if _, err := parseMediaProbeOutput([]byte("not json")); err == nil {
 		t.Fatal("invalid probe output: want error")
+	}
+}
+
+func TestProbeMediaFileReadsVideoAndRotation(t *testing.T) {
+	requireFFmpegTools(t)
+	source := filepath.Join(t.TempDir(), "source.mp4")
+	writeTestVideo(t, source, 320, 240, map[string]string{"AIGC": "probe-test"})
+	rotated := filepath.Join(t.TempDir(), "rotated.mp4")
+	help, err := exec.Command("ffmpeg", "-hide_banner", "-h", "full").CombinedOutput()
+	if err != nil {
+		t.Fatalf("inspect ffmpeg options: %v", err)
+	}
+	// 新版 ffmpeg 不再将 rotate 元数据转换为显示矩阵，优先用显式输入旋转选项生成真实夹具。
+	args := []string{"-v", "error", "-y"}
+	if bytes.Contains(help, []byte("-display_rotation")) {
+		args = append(args, "-display_rotation:v:0", "90", "-i", source, "-c", "copy", rotated)
+	} else {
+		args = append(args, "-i", source, "-c", "copy", "-metadata:s:v:0", "rotate=90", rotated)
+	}
+	if output, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
+		t.Fatalf("rotate test video: %v %s", err, output)
+	}
+	for _, tc := range []struct {
+		name, path    string
+		width, height int
+	}{
+		{"original", source, 320, 240},
+		{"rotated", rotated, 240, 320},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			info, err := probeMediaFile(context.Background(), tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if info.Width != tc.width || info.Height != tc.height || info.DurationMs < 900 || info.DurationMs > 1100 {
+				t.Fatalf("probe = %dx%d %dms, want %dx%d ~1000ms", info.Width, info.Height, info.DurationMs, tc.width, tc.height)
+			}
+			if tc.name == "original" && mediaProbeTag(info.Tags, "AIGC") != "probe-test" {
+				t.Fatalf("missing provenance tag: %#v", info.Tags)
+			}
+		})
 	}
 }
 

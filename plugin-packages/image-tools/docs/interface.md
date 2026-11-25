@@ -24,8 +24,8 @@
   "apiVersion": "yingce.plugin/v2",
   "id": "image-tools",
   "name": "Image Tools",
-  "version": "1.0.2",
-  "author": "影策",
+  "version": "1.0.3",
+  "author": "PixelShort",
   "description": "图片去背景与图层拆分工具协议插件。",
   "permissions": [
     "generation.run",

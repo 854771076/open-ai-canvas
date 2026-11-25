@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"os"
@@ -76,8 +77,18 @@ func TestProbeMediaFileReadsVideoAndRotation(t *testing.T) {
 	source := filepath.Join(t.TempDir(), "source.mp4")
 	writeTestVideo(t, source, 320, 240, map[string]string{"AIGC": "probe-test"})
 	rotated := filepath.Join(t.TempDir(), "rotated.mp4")
-	if output, err := exec.Command("ffmpeg", "-v", "error", "-y", "-i", source,
-		"-c", "copy", "-metadata:s:v:0", "rotate=90", rotated).CombinedOutput(); err != nil {
+	help, err := exec.Command("ffmpeg", "-hide_banner", "-h", "full").CombinedOutput()
+	if err != nil {
+		t.Fatalf("inspect ffmpeg options: %v", err)
+	}
+	// 新版 ffmpeg 不再将 rotate 元数据转换为显示矩阵，优先用显式输入旋转选项生成真实夹具。
+	args := []string{"-v", "error", "-y"}
+	if bytes.Contains(help, []byte("-display_rotation")) {
+		args = append(args, "-display_rotation:v:0", "90", "-i", source, "-c", "copy", rotated)
+	} else {
+		args = append(args, "-i", source, "-c", "copy", "-metadata:s:v:0", "rotate=90", rotated)
+	}
+	if output, err := exec.Command("ffmpeg", args...).CombinedOutput(); err != nil {
 		t.Fatalf("rotate test video: %v %s", err, output)
 	}
 	for _, tc := range []struct {

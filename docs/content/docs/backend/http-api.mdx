@@ -13,6 +13,10 @@ description: 信封、错误码与 OpenAPI
 
 `POST /agent/client-failures` 接受 `{events:[...]}`，仅允许固定错误码、阶段、时间、构建、HTTP 状态和 run/step/epoch；不得传原始错误、提示词、URL 或密钥。每批最多 20 条、64 KiB，返回 `{acceptedEventIds:[...]}`，客户端仅删除已确认事件。启动错误可不带 runId。本人查询 `GET /agent/client-failures?runId=...`，管理员查询 `GET /admin/agent/client-failures?userId=...&runId=...`，均最多 200 条、最近 14 天。字段合同见 OpenAPI。
 
+## 素材业务分类
+
+个人素材的写入和筛选支持 `character`、`environment`、`prop`、`material`、`other`，以及梳妆参考 `clothing`（衣服）、`expression`（表情）、`pose`（姿势）、`accessory`（配饰）、`hairstyle`（发型）、`facial_features`（五官）。旧 `wardrobe` 输入规范为 `clothing`；已保存为 `prop` 的素材不自动重分类。`ark` 分类继续由方舟认证结果管理，不允许手动设置。未知分类写入返回 400，实体与同步 JSON 使用相同的规范分类。
+
 ## 团队空间
 
 以下接口均在 `/api` 下，使用登录 Cookie。`teamId`、`membershipId`、素材 ID 只用于定位；操作权限由服务端根据当前账号及其有效成员关系决定。成员不能访问其他团队或冒用所有者，待处理邀请不授予读取权限。

@@ -12,7 +12,11 @@ description: 影策后端核心持久化表与状态边界
 该持久输入仅供服务端使用，公开任务接口仍移除 `config` 与原始引用。已经被旧规则删除的历史执行规格无法恢复，继承时继续明确拒绝，不从当前节点设置、标题或成品尺寸推测。
 
 
-## 后台管理 Agent（Schema 110）
+## 后台管理 Agent（Schema 110、112）
+
+Schema 112 为 `assistant_credentials`、`assistant_oauth_codes`、`assistant_grants` 增加 `approval_mode`，取值 `full_access` 或 `request_approval`。历史空值及新增列默认值均按 `request_approval` 处理，迁移不会自动提权。OAuth 授权码记录用户在同源授权页选择的模式，兑换后写入 grant 和 access credential；刷新锁定并重新读取 grant，模式修改在同一事务同步全部 access credential。执行抢占与模式修改共享授权父行锁，防止降级后旧 ready 调用绕过审批。
+
+同次迁移为出站 `mcp_connections` 增加 `approval_mode`；`request_approval` 保持原工具审批策略，`full_access` 表示用户明确授予该连接免逐次审批，连接归属及密钥访问约束仍生效。
 
 新增 `assistant_credentials`（Token 哈希及权限）、`assistant_oauth_clients`（回调登记）、`assistant_oauth_codes`（授权码哈希和 PKCE）、`assistant_grants`（可撤销 OAuth grant 及当前刷新哈希）、`assistant_refresh_uses`（刷新重放检测）、`assistant_invocations`（确认、参数指纹、幂等与结果）、`assistant_attachments`（限时附件）。全部纳入 `Models()` 和 SQLite→PostgreSQL 迁移清单，PostgreSQL 启用 RLS 且不给普通 PostgREST 角色添加策略。
 

@@ -38,6 +38,7 @@ export type AgentProfileView = {
 };
 
 export type AgentApprovalPreviewOperation =
+    | "mcp_call"
     | "add_node"
     | "update_node"
     | "connect_nodes"

@@ -51,6 +51,8 @@ graph LR
 | T20 | service | `backend/internal/service` | 纯别名再导出层（24 个 aliases_*.go 文件），对 handler/cmd 的稳定导入面；每加功能需两处同步 |
 | T21 | cmd | `backend/cmd/` | 可执行入口：`server`、`migrate-schema`、`migrate-sqlite-postgres`、`payment-*`（5 个）、`host-updater` |
 
+> 下钻：[后端模块细节卡](details/04-backend-modules.md) —— T01–T21 每卡符号、装配顺序与边界事实。
+
 ## 前端模块（T22–T28）
 
 | 编号 | 模块 | 路径 | 职责与审计要点 |
@@ -63,6 +65,8 @@ graph LR
 | T27 | 壳与装配 | `web/src/layouts`、`web/src/router.tsx`、`web/src/application.tsx` | 路由级布局、全局浮层、应用装配 |
 | T28 | pages | `web/src/pages` | 路由页面；`admin/` 独立域经 `admin-page-loader` 懒加载（模块清单见 03） |
 
+> 下钻：[前端与横切模块卡](details/04-frontend-cross-modules.md) —— T22–T32 细节卡与反向耦合证据清单。
+
 ## 横切模块（T29–T32）
 
 | 编号 | 模块 | 路径 | 职责与审计要点 |
@@ -71,6 +75,8 @@ graph LR
 | T30 | 远程 Agent 容器 | `yingce-agent/` | 独立 HTTP 服务：鉴权、并发闸门（`MAX_CONCURRENT_SESSIONS`）、孤儿目录回收；健康检查 `/healthz` |
 | T31 | 部署编排 | 根 `Dockerfile`、`backend/Dockerfile`、`yingce-agent/Dockerfile`、`nginx.conf`、7 个 `docker-compose*.yml` | web 镜像 = nginx 托管 SPA + `/api` 反代（SSE 关缓冲）；backend 镜像 = 三个 Go 二进制 + pi node_modules + ffmpeg；compose 家族职责见 01 |
 | T32 | 工具链 | `scripts/` | 安装轨（`install-server-image.sh` 镜像版 / `install-server.sh` 源码版 / `install-host-updater.sh`）、推送前验证（`verify-before-push.mjs`）、docs 自检（`check-docs-index.mjs`）、本地启动（`start-local.ps1` 等） |
+
+> 下钻：[前端与横切模块卡](details/04-frontend-cross-modules.md) —— 横切四卡与全部反向耦合证据。
 
 ## 前端依赖方向核查
 

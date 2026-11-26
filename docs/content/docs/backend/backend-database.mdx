@@ -5,6 +5,13 @@ description: 影策后端核心持久化表与状态边界
 
 # 后端数据库
 
+## 已完成媒体任务的继承输入
+
+`tasks.input_json` 在任务完成时删除执行凭据、供应商配置和原始媒体地址，保留现有生成合同声明的规格、渠道模型选择及有序资源身份，供基于原片生成新版本使用；蒙版仅保留存在标记。无稳定资源身份的引用保留不可继承占位，避免丢失素材后继续生成。SQLite 存储压缩采用相同规则，重复压缩不会删掉这些信息，不新增表或字段。
+
+该持久输入仅供服务端使用，公开任务接口仍移除 `config` 与原始引用。已经被旧规则删除的历史执行规格无法恢复，继承时继续明确拒绝，不从当前节点设置、标题或成品尺寸推测。
+
+
 ## 后台管理 Agent（Schema 110）
 
 新增 `assistant_credentials`（Token 哈希及权限）、`assistant_oauth_clients`（回调登记）、`assistant_oauth_codes`（授权码哈希和 PKCE）、`assistant_grants`（可撤销 OAuth grant 及当前刷新哈希）、`assistant_refresh_uses`（刷新重放检测）、`assistant_invocations`（确认、参数指纹、幂等与结果）、`assistant_attachments`（限时附件）。全部纳入 `Models()` 和 SQLite→PostgreSQL 迁移清单，PostgreSQL 启用 RLS 且不给普通 PostgREST 角色添加策略。

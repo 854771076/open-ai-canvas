@@ -2,15 +2,6 @@
 
 **一句话结论**：影策是单体 Go 后端 + React SPA 前端 + 可选 Node Agent 执行器的 AI 影视创作工作台；数据库默认 SQLite、Redis 是可选协调层；没有独立消息队列——任务队列就是数据库行租约。
 
-## 细节子页
-
-本主文档保持概览；下钻内容由四份细节子页承载（单一事实来源，概览不复制其内容）：
-
-- [数据流时序](details/01-data-flows.md)：六条核心链路的分步符号锚点与时序图
-- [状态机与生命周期](details/01-state-lifecycle.md)：任务、计费、会话与进程四类状态转移
-- [接口清单](details/01-interface-inventory.md)：路由域全集、SSE/WS 端点、中间件链
-- [配置与环境变量面](details/01-config-runtime.md)：变量表与 compose 形态逐字段对照
-
 ## 进程拓扑
 
 ```mermaid
@@ -36,6 +27,8 @@ graph TD
 
 另有 `docker-compose.server.yml`：源码构建 + PostgreSQL 的自托管编排，无 yingce-agent，仓库内无脚本或 CI 引用（见审计观察）。
 
+> 下钻：[配置与环境变量面](details/01-config-runtime.md) —— 环境变量表与七份 compose 形态逐字段对照。
+
 ## 后端分层
 
 调用链合同：`HTTP → handler → service（别名层）→ app（组合根）→ 业务域包 → repository/model → database`。
@@ -58,25 +51,13 @@ graph TD
 - `internal/service` 只是再导出层：24 个 `aliases_*.go` 文件把 `internal/app` 的类型原样 re-export，业务实现全部在 `internal/app`（815 个文件）。
 - `app.Service` 是巨石结构：60+ 字段，billing/route/worker/terminal/lifecycle 多个协调器在 `newService()`（`backend/internal/app/service.go`）单函数内手工组装。
 
+> 下钻：[接口清单](details/01-interface-inventory.md) —— 路由域全集、SSE/WS 端点与中间件链顺序。
+
 ## 关键数据流
 
 ### 生成任务（核心资金链路）
 
-```mermaid
-sequenceDiagram
-    participant U as 用户
-    participant H as handler
-    participant A as app
-    participant R as repository
-    participant W as worker
-    U->>H: POST /api/tasks
-    H->>A: CreateTask
-    A->>R: 单事务写入任务+计费单+冻结积分
-    W->>R: ClaimNextTask 行租约取任务
-    W->>A: 执行模型协议调用
-    A->>R: SettleBilling 结算或退款
-    H-->>U: SSE 文本事件与 WebSocket 画布变更
-```
+生成任务的资金链路（创建即冻结 → 行租约 → 结算/退款）分步时序见[数据流时序](details/01-data-flows.md)；各状态转移见[状态机与生命周期](details/01-state-lifecycle.md)。
 
 - 创建即冻结：`backend/internal/app/task_creation.go` 调 `repository/finance.go` 的 `CreateTaskWithCreditReservation`，任务、计费单、积分冻结在同一事务。
 - 队列即数据库：无独立 MQ，`repository/repository_tasks.go` 的 `ClaimNextTask` 用行租约（PostgreSQL 锁行 / SQLite 条件更新）。
@@ -90,6 +71,8 @@ sequenceDiagram
 - **渠道系统代理**：Gin `NoRoute` 兜到 `SystemProxyNoRouteHandler`（`/api/{channelId}/...`），按声明式协议白名单转发并做 SSRF 校验（`internal/outbound`）；用户自定义渠道走 `handler/custom_proxy.go` 中转。
 - **模型协议**：调度与输入水合在 `app/provider.go`；声明式 manifest 协议在 `app/provider_protocol.go` + `internal/protocol/`；图片/音频手写路径在 `provider_image.go` / `provider_audio.go`；视频手写路径是遗留双轨（见审计观察）。
 
+> 下钻：[数据流时序](details/01-data-flows.md) —— 六条链路的分步符号锚点与时序图。
+
 ## 数据与运行时事实
 
 - 数据库：默认 SQLite（WAL）；PostgreSQL 走 pgx；连接池 PG 30/10、SQLite 8/4（`backend/internal/database/database.go`）。
@@ -97,6 +80,8 @@ sequenceDiagram
 - Redis：非必需。仅用于限流/并发槽/租约/熔断与画布实时 Pub/Sub（`internal/platform/coordination.go`）；**PostgreSQL 多实例部署强制要求 REDIS_URL**。
 - 并发与停机：渠道并发槽默认上限 8；优雅停机先排空 HTTP（30s）再停 worker（默认宽限 10m，`backend/cmd/server/main.go`）。
 - Agent 双模式单点互斥：`backend/internal/app/cloud_agent_pi_runtime.go` —— 设了 `YINGCE_AGENT_URL` 走远程容器，否则同进程 spawn Node 子进程（`internal/agent/runtime/runtime.go`）；远程模式明确不回退内嵌，避免同一步骤跑两遍；`CANVAS_AGENT_BROWSER_ONLY=true` 时直接拒绝服务端 Node。
+
+> 下钻：[状态机与生命周期](details/01-state-lifecycle.md) —— 任务/计费/会话/进程四类状态转移与装配顺序。
 
 ## 审计观察（现状事实）
 

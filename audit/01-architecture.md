@@ -80,7 +80,7 @@ sequenceDiagram
 
 - 创建即冻结：`backend/internal/app/task_creation.go` 调 `repository/finance.go` 的 `CreateTaskWithCreditReservation`，任务、计费单、积分冻结在同一事务。
 - 队列即数据库：无独立 MQ，`repository/repository_tasks.go` 的 `ClaimNextTask` 用行租约（PostgreSQL 锁行 / SQLite 条件更新）。
-- 结算：`backend/internal/app/task_billing.go` 协调结算/退款；「uncertain」状态刻意保留冻结待人工核对；启动时有自动退款兜底扫描（`app/service.go`）。
+- 结算：`backend/internal/app/task_billing.go` 协调结算/退款；「uncertain」状态刻意保留冻结待人工核对；自动退款扫描兑底位于 `backend/internal/app/billing_auto_refund.go`（受管理员开关控制，默认关闭；开启后每分钟扫描、复核通过才退款）。
 - 推送：文本走 SSE（`handler/routes.go` 的 text-events，750ms 轮询回放表）；画布变更走 WebSocket（`handler/canvas_realtime.go` + `internal/canvas/realtime.go` Hub）。
 
 ### 其余关键链路

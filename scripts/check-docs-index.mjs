@@ -168,7 +168,7 @@ if (auditFilesGuard(auditSet)) {
       const clean = m[2].split('#')[0];
       if (!clean || /^(https?:|mailto:)/.test(clean)) continue;
       if (/(^|[\s.(\/])(docs\/)/.test(clean) || clean.startsWith('../docs')) fail(`audit/${r} 引用 docs/（隔离断言）：${m[2]}`);
-      const abs = resolve(auditRoot, clean);
+      const abs = resolve(dirname(p), clean); // 相对链接以所在文件目录为基准，子页回链主文档才可达
       try {
         statSync(abs);
       } catch {

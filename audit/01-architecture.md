@@ -55,7 +55,7 @@ graph TD
 
 两个必须先知道的现状：
 
-- `internal/service` 只是再导出层：`aliases_*.go` 60+ 文件把 `internal/app` 的类型原样 re-export，业务实现全部在 `internal/app`（815 个文件）。
+- `internal/service` 只是再导出层：24 个 `aliases_*.go` 文件把 `internal/app` 的类型原样 re-export，业务实现全部在 `internal/app`（815 个文件）。
 - `app.Service` 是巨石结构：60+ 字段，billing/route/worker/terminal/lifecycle 多个协调器在 `newService()`（`backend/internal/app/service.go`）单函数内手工组装。
 
 ## 关键数据流
@@ -102,7 +102,7 @@ sequenceDiagram
 
 1. **视频生成双轨**：`backend/internal/app/provider_video.go` 自述「遗留手写路径」，与 `internal/protocol` 声明式 manifest 并存；同类残留 `provider_jimeng.go`（即梦旧 API）、`provider_protocol_async.go`。
 2. **云 Agent 双轨**：旧模型 worker 路径（`cloud_agent_runtime.go`，`legacyCloudAgentRootTask` 仅测试保留）与新 Pi 运行时（`cloud_agent_pi_*.go`）并存。
-3. **别名层成本**：`internal/service` 60+ 文件纯 re-export，每加一个功能需在 app 与别名层两处同步。
+3. **别名层成本**：`internal/service` 24 个别名文件纯 re-export，每加一个功能需在 app 与别名层两处同步。
 4. **目录越界**：`backend/payment-plugins/`、`backend/payment-sdk/`、`backend/third_party/go-sms-sender/` 位于 backend 根目录，而非 internal 或 vendor。
 5. **疑似过时编排**：`docker-compose.server.yml` 无任何脚本、CI 或代码引用；其能力被 `scripts/install-server.sh`（deploy+build 叠加）覆盖，且缺 yingce-agent 与 updater。
 6. **机器绑定脚本入仓**：`scripts/launch-canvas.ps1` 硬编码本机绝对路径与公网隧道域名。

@@ -48,7 +48,7 @@ graph LR
 | T17 | 集成域 | `backend/internal/{sms,emailidentity,integrations,tools,workbench,ecommerce*,jianying}` | 短信渠道、邮件身份、MCP/飞书集成、内置工具、工作台目录、电商域、剪映对接 |
 | T18 | app | `backend/internal/app` | 组合根与全部业务编排：任务创建/计费协调/worker/系统代理/云 Agent Pi/插件运行时；Service 巨石（60+ 字段、815 文件、多协调器单函数组装） |
 | T19 | handler | `backend/internal/handler` | HTTP 路由、中间件、SSE、WebSocket、OpenAPI、系统代理；不含业务判断 |
-| T20 | service | `backend/internal/service` | 纯别名再导出层（60+ 文件），对 handler/cmd 的稳定导入面；每加功能需两处同步 |
+| T20 | service | `backend/internal/service` | 纯别名再导出层（24 个 aliases_*.go 文件），对 handler/cmd 的稳定导入面；每加功能需两处同步 |
 | T21 | cmd | `backend/cmd/` | 可执行入口：`server`、`migrate-schema`、`migrate-sqlite-postgres`、`payment-*`（5 个）、`host-updater` |
 
 ## 前端模块（T22–T28）

@@ -106,6 +106,8 @@ backend/cmd/server/server
 backend/tmp_*
 # Keep the runtime in source control; its optional debug map is not deployed.
 /web/public/live2d/live2dcubismcore.min.js.map
-.zocde/
+.zcode/
+# GSD 本地流程工件（mm-gsd：STATE/CONTEXT/PLAN/SUMMARY/VERIFICATION），按约定不入库
+.planning/
 # Generated locally by scripts/export-theme-skins.ts.
 /web/theme-skins-install.js

@@ -29,7 +29,7 @@
 
 apiVersion 分布：`yingce.plugin/v2` × 114、`yingce.plugin/v1` × 5（5 个 v1 全部为支付包）。
 
-与主文档差额：`audit/02-plugins.md` 写"51 个 `.yingce-plugin` 包"，实勘为 119 个，相差 +68。本页以实勘数为准；主文档由主线流程另行修正，本页不代改。
+包盘点口径：`audit/02-plugins.md` 与本页均为实勘数 119 个 `.yingce-plugin` 包（v2×114、v1×5），已核对一致。
 
 ## 三、分发与「市场」
 

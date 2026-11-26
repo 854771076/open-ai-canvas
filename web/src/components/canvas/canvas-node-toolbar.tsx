@@ -70,6 +70,8 @@ type CanvasNodeToolbarProps = {
     onTrimVideoSegments: (node: CanvasNodeData) => void;
     onEnhanceVideo?: (node: CanvasNodeData) => void;
     onDepthVideo?: (node: CanvasNodeData) => void;
+    onUpscaleVideo?: (node: CanvasNodeData) => void;
+    onRemoveVideoSubtitles?: (node: CanvasNodeData) => void;
     onVersions?: (node: CanvasNodeData) => void;
     onAdoptToDrama?: (node: CanvasNodeData) => void;
     onRefreshFromDrama?: (node: CanvasNodeData) => void;
@@ -146,6 +148,8 @@ export function CanvasNodeToolbar({
     onTrimVideoSegments,
     onEnhanceVideo,
     onDepthVideo,
+    onUpscaleVideo,
+    onRemoveVideoSubtitles,
     onVersions,
     onAdoptToDrama,
     onRefreshFromDrama,
@@ -345,6 +349,8 @@ export function CanvasNodeToolbar({
         onNodeTrimVideoSegments: onTrimVideoSegments,
         onNodeEnhanceVideo: onEnhanceVideo,
         onNodeDepthVideo: onDepthVideo,
+        onNodeUpscaleVideo: onUpscaleVideo,
+        onNodeRemoveVideoSubtitles: onRemoveVideoSubtitles,
         onNodeReversePrompt: onReversePrompt,
         onNodeToggleFreeResize: onToggleFreeResize,
         onNodeDownloadSubtitles: onDownloadSubtitles,

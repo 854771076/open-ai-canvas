@@ -17,7 +17,7 @@ mindmap
       管理员安装与自动校验
       用户级与平台级启停
     分发
-      官方目录与仓库内 51 个包
+      官方目录与仓库内 119 个包
       无独立市场与人工审核
 ```
 
@@ -33,6 +33,8 @@ mindmap
 
 前端扩展点：清单的 `contributes.canvasNodes / assetSources`（`web/src/lib/plugins/plugin-types.ts`）向画布注册节点与素材源，权限以 `PluginPermission` 集合声明。
 
+> 下钻：[插件全量清单](details/02-plugin-inventory.md) —— 五类插件入口表、包盘点实数、分发与渠道衔接。
+
 ## 支付插件运行时
 
 ```mermaid
@@ -47,6 +49,8 @@ graph TD
 - 宿主合同：渠道实现全部来自已校验的支付插件包，声明「绝不回退到宿主内置实现」（`backend/internal/app/payment_providers.go` 头注）；上传件禁止 `host:` 执行器。
 - 打包链：`backend/Dockerfile` 第一阶段构建支付插件包并做冒烟，最终镜像只带编译产物。
 
+> 下钻：[插件运行时细节](details/02-plugin-runtime.md) —— manifest 字段枚举、支付 RPC 时序与生命周期状态机。
+
 ## 生命周期与状态
 
 - **安装**（管理员）：`POST /api/plugins` → `RequireAdmin` → 校验包大小上限、manifest、sha256 与版本一致性，禁 `host:` 执行器（`backend/internal/handler/plugin.go`、`internal/app/protocol_plugins.go`）。
@@ -58,7 +62,7 @@ graph TD
 ## 分发与「市场」
 
 - 没有独立市场服务：插件中心列表 = 前端 builtin 插件 + 后端已装插件合并（`web/src/pages/plugins/index.tsx`）。
-- 官方包来自 `CANVAS_OFFICIAL_PLUGIN_DIR` 目录；仓库内 `plugin-packages/` 含 51 个 `.yingce-plugin` 包。
+- 官方包来自 `CANVAS_OFFICIAL_PLUGIN_DIR` 目录；仓库内 `plugin-packages/` 含 119 个 `.yingce-plugin` 包（另有包源目录与构建脚本，盘点见下钻子页）。
 - 「审核」是安装期自动校验（大小 / manifest / 摘要一致 / 禁 host 执行器），无人工审核流程。
 
 ## 与模型渠道体系的关系

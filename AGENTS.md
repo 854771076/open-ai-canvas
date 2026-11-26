@@ -12,15 +12,15 @@
 | --- | --- | --- | --- |
 | `web/` | Vite、React 19、TypeScript、React Router、Ant Design、Tailwind、Zustand、TanStack Query | `web/src/application.tsx`、`web/src/router.tsx` | 工作区 UI、画布交互、浏览器缓存、API 调用和模型协议适配 |
 | `backend/` | Go 1.25、Gin、GORM、SQLite/PostgreSQL、Redis 协调 | `backend/cmd/server/main.go` | 登录、权限、业务 API、任务队列、资源、模型中转和后台管理 |
-| `docs/` | Next.js、Fumadocs、MDX | `docs/content/docs/` | 面向用户和开发者的专题文档；构建配置见 `docs/source.config.ts` |
+| `docs/` | Markdown / MDX 内容树 | `docs/index.md` | 面向用户和开发者的专题文档；入口地图为 `docs/index.md`，索引自检用 `bun scripts/check-docs-index.mjs` |
 
-根目录的 `Dockerfile` 构建前端静态镜像；`nginx.conf` 托管 SPA 并代理后端。`docker-compose.dev.yml` 是源码热更新开发编排，根 `docker-compose.yml` 和 `docker-compose.local.yml` 是本地构建运行。服务器默认使用官方 Release 镜像、`docker-compose.deploy.yml`（PostgreSQL、Redis、独立 Agent、迁移服务）和宿主机 Host Updater，详细说明见 [Docker 部署](docs/content/docs/overview/docker.mdx)。
+根目录的 `Dockerfile` 构建前端静态镜像；`nginx.conf` 托管 SPA 并代理后端。`docker-compose.dev.yml` 是源码热更新开发编排，根 `docker-compose.yml` 和 `docker-compose.local.yml` 是本地构建运行。服务器默认使用官方 Release 镜像、`docker-compose.deploy.yml`（PostgreSQL、Redis、独立 Agent、迁移服务）和宿主机 Host Updater，部署拓扑以各 `docker-compose*.yml` 为准，在线更新与回退见 [在线更新与安全回退](docs/content/docs/backend/system-update.mdx)。
 
 ## 2. 开始工作前
 
 ### Agent 本地开发
 
-详细说明请参考 [docs/AGENT_LOCAL_DEVELOPMENT.md](docs/AGENT_LOCAL_DEVELOPMENT.md)。
+详细说明请参考 [本地开发](docs/content/docs/backend/local-development.mdx)。
 
 **快速启动**：
 
@@ -151,7 +151,7 @@ cd web && bun run dev
 - 前端：`cd web && bun run build`；专项测试用 `bun test ...`。UI 退场规则用 `bun run lint`（只禁 antd Empty 和静态 `Modal.confirm`，不是风格检查）。
 - 后端：`cd backend && go test ./...`；涉及 PostgreSQL、资源、任务或权限时补对应集成/冒烟路径。
 - 云端 Agent：前端事件流和审批路径依赖后端 `/api/agent` 接口；在该接口实现后补充后端冒烟、Worker 运行和 SSE 断线重连验证。
-- 文档站：`cd docs && bun run types:check` 或 `bun run build`。
+- 文档索引：`bun scripts/check-docs-index.mjs`（文档覆盖、死链、技术模块编号、导航一致性与禁词自检）。
 - UI 变更能浏览器验证时，检查关键路由、明暗主题、滚动、弹窗、空态和核心交互；不能验证时说明替代依据，不把静态阅读或 `git diff` 写成运行验证。
 - 验证必须针对真实实现：优先专项测试、类型检查、项目 build 或真实路由浏览器验收。独立 HTML、静态仿制页面和脱离应用状态的截图不能作为真实页面通过的证据。
 
@@ -174,7 +174,7 @@ cd web && bun run dev
 ## 9. 文档与交付
 
 - 根 `README.md` 只保留项目定位、能力概览、快速开始、部署、安全和文档入口；详细专题写入 `docs/content/docs/`。
-- 功能、代码地图、待办、待测试分别维护在 `docs/content/docs/overview/features.mdx`、`docs/content/docs/backend/code-map.mdx`、`docs/content/docs/progress/todo.mdx`、`docs/content/docs/progress/pending-test.mdx`。已实现但未由用户确认的变化先写入 `pending-test.mdx`。
+- 功能、代码地图、待测试分别维护在 `docs/content/docs/overview/features.mdx`、`docs/content/docs/backend/code-map.mdx`、`docs/content/docs/progress/pending-test.mdx`。已实现但未由用户确认的变化先写入 `pending-test.mdx`。
 - API、数据表、SSE、资源存储、部署或安全边界变化时同步对应专题文档；不要只改代码和根 README。
 - 文档默认中文，不写过期日期，不公开密码、Token、Cookie、真实账号或机器敏感路径。命令、端口、环境变量必须以当前脚本和 Compose 为准。
 - Git 提交说明使用 `<type>(<scope>): <业务模块> - <变更摘要>`，`type` 为 `feat|fix|refactor|perf|docs|test|build|ci|chore|revert`。

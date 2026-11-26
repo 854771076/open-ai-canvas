@@ -45,6 +45,16 @@ const docSet = new Map(docFiles.map((p) => [relFromDocs(p), p]));
 
 if (docFiles.length < 10) fail(`docs/ 下仅发现 ${docFiles.length} 篇文档，疑似路径配置错误`);
 
+// audit 防空集合守卫：主文档（NN-）少于 4 篇即视为目录配置错误，不能静默全绿
+function auditFilesGuard(set) {
+  const mains = [...set.keys()].filter((r) => /^\d{2}-/.test(r));
+  if (mains.length < 4) {
+    fail(`audit/ 主文档不足 4 篇（实见 ${mains.length}），疑似目录配置错误`);
+    return false;
+  }
+  return true;
+}
+
 for (const [r, p] of docSet) {
   if (statSync(p).size === 0) fail(`空文档：${r}`);
 }
@@ -130,6 +140,51 @@ const dateHits = [...new Set([...prose.matchAll(/\d{4}-\d{2}-\d{2}/g)].map((m) =
 if (dateHits.length) fail(`描述文本出现日期（过程产物禁入）：${dateHits.join(', ')}`);
 const milestoneHits = [...new Set([...prose.matchAll(/\bM\d+\.\d+/g)].map((m) => m[0]))];
 if (milestoneHits.length) fail(`描述文本出现里程碑号（过程产物禁入）：${milestoneHits.join(', ')}`);
+
+// ---- audit/ 域自检（链接可达、子页被引用、零行号锚点、与 docs/ 隔离；fail-closed）----
+const auditRoot = join(repoRoot, 'audit');
+function walkAudit(dir) {
+  const out = [];
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) out.push(...walkAudit(p));
+    else if (/\.(md|mdx)$/.test(name)) out.push(p);
+  }
+  return out;
+}
+const auditRel = (p) => relative(auditRoot, p).split(sep).join('/');
+const auditSet = new Map(walkAudit(auditRoot).map((p) => [auditRel(p), p]));
+
+if (auditFilesGuard(auditSet)) {
+  for (const [r, p] of auditSet) {
+    if (statSync(p).size === 0) fail(`空文档：audit/${r}`);
+  }
+  const auditRefs = new Map();
+  for (const [r, p] of auditSet) {
+    const text = readFileSync(p, 'utf8');
+    const lineHits = [...new Set([...text.matchAll(/\.(go|ts|tsx|mjs):\d+/g)].map((m) => m[0]))];
+    if (lineHits.length) fail(`audit/${r} 出现行号锚点（人类阅读内容不用行号）：${lineHits.slice(0, 5).join(', ')}`);
+    for (const m of text.matchAll(/\[([^\]]*)\]\(([^)\s]+)\)/g)) {
+      const clean = m[2].split('#')[0];
+      if (!clean || /^(https?:|mailto:)/.test(clean)) continue;
+      if (/(^|[\s.(\/])(docs\/)/.test(clean) || clean.startsWith('../docs')) fail(`audit/${r} 引用 docs/（隔离断言）：${m[2]}`);
+      const abs = resolve(auditRoot, clean);
+      try {
+        statSync(abs);
+      } catch {
+        fail(`audit 死链：${m[2]}（audit/${r}）`);
+        continue;
+      }
+      const relNorm = relFromDocs(abs).startsWith('..') ? null : relFromDocs(abs);
+      void relNorm;
+      const relAudit = relative(auditRoot, abs).split(sep).join('/');
+      if (auditSet.has(relAudit) && relAudit !== r) auditRefs.set(relAudit, (auditRefs.get(relAudit) ?? 0) + 1);
+    }
+  }
+  for (const r of auditSet.keys()) {
+    if (r.startsWith('details/') && !auditRefs.has(r)) fail(`details 子页未被任何主文档或 README 引用：audit/${r}`);
+  }
+}
 
 // ---- 汇总 ----
 if (errors.length) {

@@ -2,6 +2,15 @@
 
 **一句话结论**：影策是单体 Go 后端 + React SPA 前端 + 可选 Node Agent 执行器的 AI 影视创作工作台；数据库默认 SQLite、Redis 是可选协调层；没有独立消息队列——任务队列就是数据库行租约。
 
+## 细节子页
+
+本主文档保持概览；下钻内容由四份细节子页承载（单一事实来源，概览不复制其内容）：
+
+- [数据流时序](details/01-data-flows.md)：六条核心链路的分步符号锚点与时序图
+- [状态机与生命周期](details/01-state-lifecycle.md)：任务、计费、会话与进程四类状态转移
+- [接口清单](details/01-interface-inventory.md)：路由域全集、SSE/WS 端点、中间件链
+- [配置与环境变量面](details/01-config-runtime.md)：变量表与 compose 形态逐字段对照
+
 ## 进程拓扑
 
 ```mermaid

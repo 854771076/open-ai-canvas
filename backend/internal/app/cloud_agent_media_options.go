@@ -19,6 +19,10 @@ func (s *Service) resolveCloudAgentMediaConfiguration(a *cloudAgentMediaArgs, st
 	if err != nil {
 		return err
 	}
+	if a.InheritedOptions != nil {
+		options = *a.InheritedOptions
+	}
+	a.InheritedOptions = &options
 	if selection != nil && !a.ConfigurationChange.includes("model") {
 		a.LogicalModelID, a.ChannelID, a.ChannelModelKey = selection.LogicalModelID, selection.ChannelID, selection.ModelKey
 	}
@@ -65,6 +69,7 @@ func cloudAgentMediaDraftConfiguration(a cloudAgentMediaArgs, doc map[string]any
 			config[key] = meta[key]
 		}
 		config["videoSeconds"], config["videoGenerateAudio"], config["videoWatermark"] = meta["seconds"], meta["generateAudio"], meta["watermark"]
+		config["videoArkPrivateAssetUpload"] = meta["arkPrivateAssetUpload"]
 		config["audioMode"], config["audioVoice"], config["audioFormat"], config["audioSpeed"], config["audioInstructions"] = meta["audioMode"], meta["audioVoice"], meta["audioFormat"], meta["audioSpeed"], meta["audioInstructions"]
 		options, err = contract.OptionsFromTaskConfig(a.Mode, config)
 		if err != nil {
@@ -107,6 +112,9 @@ func applyCloudAgentMediaDraftOptions(a *cloudAgentMediaArgs, options contract.O
 	}
 	if options.Watermark != nil {
 		a.VideoWatermark = options.Watermark
+	}
+	if options.ArkPrivateAssetUpload != nil {
+		a.VideoArkPrivateAssetUpload = options.ArkPrivateAssetUpload
 	}
 	if options.AudioMode != nil && a.AudioMode == "" {
 		a.AudioMode = *options.AudioMode

@@ -57,6 +57,8 @@ mindmap
 
 路由定义：`web/src/router.tsx`；工作区路由分组：`web/src/lib/workspace-route-modules.ts`。
 
+> 下钻：[路由与门控全量清单](details/03-route-inventory.md) —— 顶层路由、管理后台子路由全集、重定向清单与守卫机制。
+
 ## 核心模块展开
 
 - **画布工作台**：产品最重的子系统，三件套分层——视图层 `web/src/components/canvas/`（232 文件：视口、节点、工具栏、previs）、状态层 `web/src/stores/canvas/`（6 个 store，主 store 872 行带持久化）、逻辑层 `web/src/lib/canvas/`（250 文件纯函数：node-registry、tool-registry、previs）。
@@ -64,11 +66,15 @@ mindmap
 - **短剧项目**：`web/src/pages/projects/` + `studio/`（约 35 文件），按项目与分集组织制作流程。
 - **管理后台**：`web/src/pages/admin/` 覆盖渠道、逻辑模型、插件、MCP、技能、支付、日志、登录日志、邮件日志、兑换码、用户、用户组、设置、工作台工具、姿势库、分镜提示词、反馈、Agent 接入、流量等；经 `admin-page-loader` 独立懒加载，与用户端壳层隔离。
 
+> 下钻：[核心模块数据流](details/03-module-flows.md) —— 画布生成双轨消费链、任务中心 SSE、电商与短剧流程。
+
 ## 模块间共享能力
 
 - 素材库被画布、创作页、电商、团队空间共享（`services/` 下的 asset 同步族）。
 - 模型选择与参数面板跨页复用（`components/model-picker`、`components/image-settings-panel` 等）。
 - 任务中心聚合生成任务状态（`services/api/task-center.ts` + SSE 事件流）。
+
+> 下钻：[核心模块数据流](details/03-module-flows.md) —— 模块间共享能力一节与全部共享面证据。
 
 ## 审计观察（现状事实）
 

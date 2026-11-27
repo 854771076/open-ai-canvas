@@ -14,6 +14,7 @@
 ## 设计沉淀
 
 - [Agent 视频观察与图片读取回归规格](design/agent-video-observation-spec.md)：服务端带时间戳抽帧、局部精读、现有视觉链路复用、权限与预算、图片回归及真实视频验收（首期已实现，待真实画布与供应商验收）。
+- [画布与 Agent 共用业务工具规格](design/shared-canvas-agent-tools-spec.md)：一次注册投影画布入口与 Agent 合同，统一视频处理的准入、参数、审批、计费及重试（首批视频处理已本地实现，待真实验收）。
 
 - [Agent 浏览器 Worker 与服务端共存](design/browser-agent-worker.md)：默认关闭的环境变量与后台开关、单步授权、断线续跑和失败日志自动上报；已实现并进行本地联调。
 

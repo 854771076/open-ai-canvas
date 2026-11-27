@@ -80,7 +80,7 @@ export function CanvasCharacterReferenceNodeContent({ node, onSelectOutfit, onOp
                         event.stopPropagation();
                         onOpenDressing();
                     }}
-                    className="absolute right-3 top-3 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)]"
+                    className="canvas-character-dressing-trigger absolute bottom-14 right-3 rounded-md px-2 py-1 text-xs outline-none focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)]"
                 >
                     梳妆台
                 </button>

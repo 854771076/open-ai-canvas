@@ -142,6 +142,22 @@
 - **被谁依赖**：T18 app（sms 经 `SetSMSDelivery` 注入 auth；workbench/prompts 经 adminGate 桥接；电商域由专门 worker 同步）。
 - **边界与观察**：`integrations/mcp` 的私网放行走 T05 的 `CANVAS_MCP_ALLOWED_PRIVATE_HOSTS`，`sanitize.go` 是 MCP 入参净化闸；tools 改号是唯一显式数据迁移式兼容层，新工具编号必须避开 90/91 与 1000090/1000091。
 
+### 其余域包（主表 T17 全集补齐）
+
+| 包 | 规模 | 职责与关键符号 | 边界/审计要点 |
+| --- | --- | --- | --- |
+| `internal/generation` | 6 文件 668 行 | 声明式协议执行引擎：`Engine` 经 `Deps` 注入媒体解析/进度/计费钩子/渠道限流/持久化五接口，挂接点 `app/generation_registry_bridge.go`；`AgentProtocolAdapterForContext`、`CanonicalAgentRequest` | `registry.go` 的 `loadOfficialFallbackRegistry` 与 `types.go` 部分符号生产不可达（见 05 账本四） |
+| `internal/imagebilling` | 2 文件 203 行 | 图像产出像素计价：`pricing.go` 的 `Amount`/`MapPrices`/`Reserve` | 计价规则独立成包，经 `app/credit_cost.go` 进入积分结算 |
+| `internal/hostupdate` | 13 文件 2,808 行 | Host Updater 域：`Manager`（`NewManager`/`StartUpdate`/`runUpdate` 检查-备份-迁移-切换-回滚状态机）、`server.go` Unix socket 服务端、`sources.go` 发布源 | **唯一生产入口是 `backend/cmd/host-updater`**——死代码分析必须覆盖该入口，仅扫 `cmd/server` 会误报 76 个函数（05 账本四的方法学修正） |
+| `internal/updaterclient` | 2 文件 154 行 | backend 侧更新客户端：`Client`（`Status`/`Check`/`Start`） | 管理后台系统更新页背后即这条链（与 01 数据流互见） |
+| `internal/agentcontext` | 2 文件 226 行 | Agent 检查点契约：`Checkpoint`/`Frame`/`ParseFrame`/`BuildPrompt` | Go 与 Node 两侧共享的契约包 |
+| `internal/production` | 14 文件 3,517 行 | 短剧制作域：剧本圣经 `Bible`/`BibleCharacter`、`AssetScheme`/`AssetSettings` | 域内最大包之一 |
+| `internal/inspirations` | 4 文件 986 行 | 灵感流：`Feed`/`FeedEntry`、`AdminGate`/`Locker` | worker 由 T18 `StartWorker` 拉起 |
+| `internal/poselibrary` | 6 文件 1,541 行 | 姿势库：`importer.go` `Import`、`AdminItem`/`BulkRequest` 管理面 | `Import` 被 `app/pose_library_bridge.go` 调用 |
+| `internal/providercatalog` | 6 文件 1,002 行 | 供应商目录运营数据源：`Catalog`/`ApplyMarkup`/`Connection` | T08 provider 经 `providercatalog.Source` 装配插件目录 |
+| `internal/buildinfo` | 2 文件 66 行 | 构建信息注入：`Current`/`Info` | 值由构建期注入，运行期只读 |
+| `internal/logging` | 4 文件 512 行 | HTTP 访问日志：`http.go` `AccessLog`/`Recovery`、`ConfigFromEnv` | 挂载顺序见 01 接口清单的中间件链 |
+
 ## T18 app
 
 - **职责**：全部业务用例的宿主；`Service` 是唯一门面。

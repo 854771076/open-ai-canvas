@@ -1,6 +1,6 @@
 # 01 · HTTP 路由与端点清单
 
-本页从 `backend/internal/handler/api.go` 的 `RegisterCanvasAPI` 注册全集与 `backend/cmd/server/main.go` 的 `run()` 装配代码逐项枚举路由域、流式端点与中间件链，所有条目均来自代码实读。
+本页从 `backend/internal/handler/api.go` 的 `RegisterCanvasAPI` 注册全集与 `backend/cmd/server/main.go` 的 `run()` 装配代码逐项枚举路由域、流式端点与中间件链，所有条目均来自代码实读。端点级全量契约以 `backend/internal/handler/openapi.yaml` 为准，本页为域级导航与流式/中间件细节，未展开的域见「路由域清单」文末补遗。
 
 ## 路由总入口
 

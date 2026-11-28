@@ -8,7 +8,7 @@ manifest 是插件唯一能力契约（`types.go` 中 `Manifest` 结构注释原
 
 | 字段 | 取值/类型 | 校验与语义（锚点=路径+符号） |
 |---|---|---|
-| `apiVersion` | `yingce.plugin/v1` 或 `yingce.plugin/v2` | `ValidateManifest`（`backend/internal/protocol/manifest.go`）只接受这两个字面量；前端 `plugin-types.ts` 常量 `PLUGIN_API_VERSION="yingce.plugin/v1"` 且类型放行 `"yingce.plugin/v2"`。实勘仓库 119 个官方包：114 个 v2、5 个 v1（v1 全部为支付包）。施工图写 v1，实勘两版并存、存量以 v2 为主 |
+| `apiVersion` | `yingce.plugin/v1` 或 `yingce.plugin/v2` | `ValidateManifest`（`backend/internal/protocol/manifest.go`）只接受这两个字面量；前端 `plugin-types.ts` 常量 `PLUGIN_API_VERSION="yingce.plugin/v1"` 且类型放行 `"yingce.plugin/v2"`。实勘仓库 119 个官方包：114 个 v2、5 个 v1（v1 全部为支付包）。实勘两版并存（v2×114、v1×5，v1 全部为支付包），存量以 v2 为主 |
 | `id` / `name` / `version` | wire 顶层平铺，内部投影为 `Metadata` | `validManifestIdentifier`：id 为小写字母/数字/`-`/`_`/`.`、≤96 字符、不得以 `-`/`_`/`.` 开头；name ≤160、author(vendor) ≤120；三者必填 |
 | `entry` / `surfaces` | web 入口路径 / 表面枚举 | `validatePluginPackageRuntime`（`backend/internal/protocol/package.go`）：包内有 `web/` 文件或声明 `runtime.web` 时，entry 必填且必须位于 `web/` 内；surfaces 取值 node/fullscreen/hybrid/asset-source/settings/wallet（前端 `PluginSurface`） |
 | `runtime` | `{backend, backendEntry, web}`（`ManifestRuntime`） | backend ∈ `declarative` / `rpc` / `wasm` / `trusted-backend` / `host:` 前缀（`ValidateManifest`）；上传件禁 `host:`（`pluginRuntime.install`）；`rpc`/`wasm` 的 `backendEntry` 必须相对 `backend/`，rpc 还须含任一平台可执行件（`HasAnyPaymentRPCBackend`）；上传含 web 文件时 `runtime.web` 必须 `sandbox` 或 `worker` |
@@ -51,7 +51,7 @@ sequenceDiagram
 
 单次 JSON RPC 合同（`rpc.go` 的 `pluginRPCVersion`/`pluginRPCMaxOutput`/`pluginRPCTimeout` 与 `rpcRequest`/`rpcResponse`）：版本字面量 `yingce.payment/v1`；stdout 上限 2MB；进程超时 30 秒；operation ∈ validate_config / create_order / query_order / close_order / verify_notification / download_trade_bill；回调验签时原文以 `bodyBase64` 传递；`ok=false` 时错误码映射宿主哨兵错误（如 `paymentsdk.RPCCodeOrderNotFound` → `ErrOrderNotFound`）。进程环境净化为 `PATH=/usr/bin:/bin`、`HOME=/nonexistent`（Windows 另保留 SystemRoot，`paymentPluginCommandEnv`）；启动前过 `validatePaymentExecutablePlatform` 的魔数与架构校验（ELF/Mach-O/PE）。
 
-平台二进制解析：`backend/internal/protocol/payment_rpc.go` 的 `PaymentRPCBackendCandidates(entry, goos, goarch)` 生成 `entry-os-arch`、`目录/os-arch/base`、`entry` 及各自 `.exe` 变体候选；`rpc.go` 的 `ResolveRPCBackendPath` 逐个探测；落盘由 `protocol_plugins.go` 的 `materializePaymentBackendFromPackage` 完成（按摘要去重、跨进程硬链接复用、`.ready` 标记对应摘要）。施工图把"按平台拉起包内二进制"记在 `backend/internal/payment/registry.go`，实勘该文件只是 ID→Provider 的内存映射（`NewRegistry`/`Get`/`Descriptors`/`Providers`），平台解析与物化实际在上述两处。
+平台二进制解析：`backend/internal/protocol/payment_rpc.go` 的 `PaymentRPCBackendCandidates(entry, goos, goarch)` 生成 `entry-os-arch`、`目录/os-arch/base`、`entry` 及各自 `.exe` 变体候选；`rpc.go` 的 `ResolveRPCBackendPath` 逐个探测；落盘由 `protocol_plugins.go` 的 `materializePaymentBackendFromPackage` 完成（按摘要去重、跨进程硬链接复用、`.ready` 标记对应摘要）。实勘 `backend/internal/payment/registry.go` 只是 ID→Provider 的内存映射（`NewRegistry`/`Get`/`Descriptors`/`Providers`），平台解析与物化分别在 `PaymentRPCBackendCandidates`/`ResolveRPCBackendPath` 与 `materializePaymentBackendFromPackage`。
 
 五个入口（均一行 `paymentplugins.RunRPC(provider, os.Stdin, os.Stdout)`，出错 `os.Exit(1)`；各目录只含 `main.go`）：
 

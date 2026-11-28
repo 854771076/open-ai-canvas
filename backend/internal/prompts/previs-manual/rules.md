@@ -19,7 +19,8 @@
 ## 4. 用对工具
 | 要做的事 | 用 | 不要用 |
 | --- | --- | --- |
-| 实物（树、车、房子、桌椅） | `object_add kind=prop propId` | box / cylinder 拼凑 |
+| 目录已有的实物（树、车、房子、桌椅） | `object_add kind=prop propId`，params 只按 catalog.params | 猜道具参数或用 box / cylinder 草率代替 |
+| 没有合适模型、独特外形或用户要求自己建模 | 自己造：先读 `manual=sculpt` 或 `manual=mesh`，用 `kind=sculpt` 配方或 `kind=mesh` 三角拓扑 | 因缺素材中止，或忽略用户的建模要求 |
 | 一片街区、城镇、园林、森林 | `object_add kind=layout` | 上百个单独道具 |
 | N 个同类 | `object_array_add` | N 条 object_add |
 | 人物 A 点到 B 点 | `actor_travel` | `actor_motion_add run`（那是原地动作） |

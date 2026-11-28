@@ -5,6 +5,15 @@ description: 信封、错误码与 OpenAPI
 
 # HTTP API 合同
 
+## 世界引擎造型数据合同
+
+世界引擎场景对象新增 `kind: "sculpt"` 与 `sculpt: { version: 1, parts: [...] }`。Agent 通过原 `previs_apply_patch` 的 `object_add`／`object_update` 创建或整体替换配方；完整形状合同由 `previs_scene_read(manual="sculpt")` 按需返回，`includeTransforms=true` 返回规范化配方。服务端严格校验专用字段、父子、镜像、轮廓、孔洞、退化与复杂度上限；浏览器负责几何和严格布尔生成。现有权限、审批、CAS 和场景大小限制不变。
+
+Agent 自建三角网格使用 `kind: "mesh"` 与 `mesh: { version: 1, vertices: [[x,y,z],...], triangles: [[a,b,c],...], colors: ["#rrggbb",...] }`。通过原 `object_add`／`object_update` 创建或整体替换拓扑；`previs_scene_read(manual="mesh")` 返回建模说明。普通读取返回顶点／面数和范围摘要，`includeTransforms=true` 返回完整拓扑，可配合 `objectIds` 定向读取。校验 3–20000 顶点、1–40000 三角面、零起始整数索引、非退化面积、有限坐标与每面颜色。所有场景合计仍受 1 MiB 上限约束。拓扑更新保留对象 ID、变换、动画和父子关系，包围盒从新顶点重新计算。
+
+手动新建或转换的网格仍为 `kind: "model"`，引用独立 GLB 素材，使用 `meshEditable: true` 和 `modelBounds: { min: [x,y,z], max: [x,y,z] }` 保存可编辑标记与局部包围盒；这类模型场景不携带顶点数组。Agent 自建的 `kind=mesh` 可用相同编辑器继续操作，手动保存导出独立 GLB 素材，同时保留场景拓扑供 Agent 再次修改。模型元数据校验有限坐标、范围和包围盒顺序，取景和贴地应用旋转与负缩放。
+
+Sculpt 配方、道具 params 和 mesh 字段错误会以 `invalid_tool_arguments` 返回字段及修正指引，沿用三次纠错上限，不直接终止首次错误会话。权限、对象归属、审批及快照校验继续执行。`car` 没有可调 params，参数化轿车使用 `shotloom-vehicle-sedan`；圆锥使用 Sculpt `cylinder+taper=1`。详见[世界引擎模型与建模](../canvas/world-engine-modeling.mdx)。
 ## MCP 授权方式
 
 后台管理 Token 创建和同源 OAuth consent POST 支持 `approvalMode: full_access|request_approval`。全权委托覆盖当前管理员的全部管理能力并免逐操作确认；逐次确认继续校验模块 scopes，并对高风险操作返回 `pending_confirmation`。服务端省略模式及历史授权保持逐次确认，授权页面新建时默认选中全权委托，须点击授权才生效；OAuth authorize 查询参数不能自行提权。

@@ -122,7 +122,7 @@ func cloudAgentPrevisSceneRead(repo *repository.Repository, userID, canvasID str
 	projection := projectPrevisScene(scene, args.ShotID, objectIDs)
 	if args.IncludeTransforms {
 		// Augment with full spatial data for layout planning: object positions, camera transforms, FOV
-		projection["spatialLayout"] = cloudAgentPrevisSpatialLayout(scene)
+		projection["spatialLayout"] = cloudAgentPrevisSpatialLayout(scene, objectIDs)
 		projection["coordinateGuide"] = "坐标系: Y轴向上，单位为米，地面 Y=0。人物高约1.8m。演员原点在脚底，Y=脚底离地高度；box/sphere/cylinder原点在中心，底面低于地面时会被拉回。position=[X,Y,Z]，rotation=[绕X,绕Y,绕Z弧度]。target是摄影机焦点坐标。路径点与参考轨迹的 Y 是离地高度。"
 	}
 	result := map[string]any{
@@ -151,14 +151,17 @@ func previsMapSafe(v any) map[string]any {
 
 // cloudAgentPrevisSpatialLayout returns precise spatial data for Agent layout planning.
 // It never returns model URLs, storage keys, or any other sensitive references.
-func cloudAgentPrevisSpatialLayout(scene map[string]any) map[string]any {
+func cloudAgentPrevisSpatialLayout(scene map[string]any, objectFilters ...map[string]bool) map[string]any {
 	objects := creationMaps(scene["objects"])
 	cameras := creationMaps(scene["cameras"])
 	shots := creationMaps(scene["shots"])
 
 	objLayouts := make([]map[string]any, 0, len(objects))
 	for _, obj := range objects {
-		if !boolValue(obj["visible"], true) {
+		if len(objectFilters) > 0 && len(objectFilters[0]) > 0 && !objectFilters[0][stringValue(obj["id"])] {
+			continue
+		}
+		if !boolValue(obj["visible"], true) && !(len(objectFilters) > 0 && objectFilters[0][stringValue(obj["id"])]) {
 			continue
 		}
 		transform := previsMapSafe(obj["transform"])
@@ -169,6 +172,7 @@ func cloudAgentPrevisSpatialLayout(scene map[string]any) map[string]any {
 			"archetype":     stringValue(obj["archetype"]),
 			"pose":          stringValue(obj["pose"]),
 			"color":         stringValue(obj["color"]),
+			"visible":       boolValue(obj["visible"], true),
 			"position":      transform["position"],
 			"rotation":      transform["rotation"],
 			"scale":         transform["scale"],
@@ -176,6 +180,16 @@ func cloudAgentPrevisSpatialLayout(scene map[string]any) map[string]any {
 			"hasMotionPath": obj["motionPath"] != nil,
 		}
 		cloudAgentPrevisProjectCatalogFields(entry, obj)
+		if stringValue(obj["kind"]) == "sculpt" {
+			if normalized, err := cloudAgentPrevisNormalizeSculpt(obj["sculpt"]); err == nil {
+				entry["sculpt"] = normalized
+			}
+		}
+		if stringValue(obj["kind"]) == "mesh" {
+			if normalized, err := cloudAgentPrevisNormalizeMesh(obj["mesh"]); err == nil {
+				entry["mesh"] = normalized
+			}
+		}
 		if motions := creationMaps(obj["motions"]); len(motions) > 0 {
 			projected := make([]map[string]any, 0, len(motions))
 			for _, motion := range motions {
@@ -408,6 +422,11 @@ func cloudAgentPrevisProjectCatalogFields(entry map[string]any, object map[strin
 		entry["motionPath"] = path
 	}
 	switch stringValue(object["kind"]) {
+	case "mesh":
+		if mesh, err := cloudAgentPrevisNormalizeMesh(object["mesh"]); err == nil {
+			bounds, _ := cloudAgentPrevisMeshBounds(mesh)
+			entry["meshSummary"] = map[string]any{"vertices": len(mesh["vertices"].([][]float64)), "triangles": len(mesh["triangles"].([][]int)), "bounds": bounds}
+		}
 	case "prop":
 		entry["propId"] = stringValue(object["propId"])
 		entry["variant"] = int(numberValue(object["variant"], 0))

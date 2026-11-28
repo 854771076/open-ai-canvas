@@ -1,11 +1,12 @@
 import type { PrevisLayoutTemplate, PrevisPropParams, PrevisVec3 } from "@/types/previs";
+import { SHOTLOOM_PREVIS_PROPS, hasShotloomPropBuilder, resolveShotloomPropSize } from "./previs-shotloom";
 
 /**
  * 程序化道具目录：只放数据（ID、名称、分类、占地尺寸），几何体在 previs-prop-geometry.ts 生成。
  * 后端 Agent 白名单 cloud_agent_previs_catalog.go 与这里的 ID 一一对应，增删道具时两边同步。
  * size 为默认变体的宽/高/深（米），原点在底面中心；用于放置避让、取景和提示词。
  */
-export type PrevisPropCategoryId = "building" | "base" | "plant" | "ancient" | "modern" | "street" | "vehicle" | "nature" | "furniture";
+export type PrevisPropCategoryId = "building" | "base" | "plant" | "ancient" | "modern" | "street" | "vehicle" | "nature" | "furniture" | "shape" | "hand_prop" | "architecture" | "circulation" | "industrial" | "themed";
 
 /** 参数定义：驱动检查器控件、Agent 校验（后端镜像）与默认值。 */
 export type PrevisPropParamDef =
@@ -34,6 +35,12 @@ export const PREVIS_PROP_CATEGORIES: Array<{ id: PrevisPropCategoryId; label: st
     { id: "vehicle", label: "交通工具" },
     { id: "nature", label: "山石自然" },
     { id: "furniture", label: "室内家具" },
+    { id: "shape", label: "基础形状" },
+    { id: "hand_prop", label: "生活道具" },
+    { id: "architecture", label: "建筑构件" },
+    { id: "circulation", label: "楼梯与通道" },
+    { id: "industrial", label: "工业施工" },
+    { id: "themed", label: "古装舞台" },
 ];
 
 const prop = (id: string, name: string, category: PrevisPropCategoryId, size: PrevisVec3, extra: Partial<PrevisCatalogProp> = {}): PrevisCatalogProp => ({ id, name, category, size, ...extra });
@@ -264,6 +271,7 @@ export const PREVIS_PROP_CATALOG: PrevisCatalogProp[] = [
     prop("bed", "双人床", "furniture", [1.8, 1.1, 2.15], { accent: "床品" }),
     prop("bookshelf", "书架", "furniture", [1.2, 2, 0.35]),
     prop("desk", "书桌", "furniture", [1.4, 0.76, 0.7]),
+    ...SHOTLOOM_PREVIS_PROPS,
 ];
 
 const PROP_BY_ID = new Map(PREVIS_PROP_CATALOG.map((item) => [item.id, item]));
@@ -291,6 +299,7 @@ export function resolvePrevisPropParams(propId: string | undefined, params?: Pre
 
 /** 道具实际尺寸（宽/高/深，米）：参数化组件按参数计算，其他道具取目录尺寸。 */
 export function resolvePrevisPropSize(propId: string | undefined, params?: PrevisPropParams): PrevisVec3 | undefined {
+    if (propId && hasShotloomPropBuilder(propId)) return resolveShotloomPropSize(propId, params);
     const prop = resolvePrevisCatalogProp(propId);
     if (!prop) return undefined;
     if (!prop.params) return prop.size;

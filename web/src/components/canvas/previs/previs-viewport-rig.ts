@@ -1,6 +1,6 @@
 // 世界引擎人物模型的骨骼推断、姿态轨道应用与参考材质。纯 three.js 操作，不涉及 React。
 
-import { Bone, Box3, Camera, Color, type Material, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, Quaternion, ShaderMaterial, Vector3 } from "three";
+import { Bone, Camera, Color, type Material, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, Quaternion, ShaderMaterial } from "three";
 import { disposePrevisMaterials } from "@/lib/canvas/previs/previs-resources";
 import { type PrevisHumanoidBone, type PrevisObject, type PrevisQuat, type PrevisRig } from "@/types/previs";
 import { previsPoseBoneDeltas } from "@/lib/canvas/previs/previs-scene";
@@ -18,24 +18,7 @@ export function previsFingerGroup(bone: string | null) {
     return match ? `${match[1]}${match[2]}` : null;
 }
 
-export function normalizeModel(root: Object3D, castShadow: boolean, receiveShadow: boolean) {
-    root.updateMatrixWorld(true);
-    const bounds = new Box3().setFromObject(root, true);
-    const size = bounds.getSize(new Vector3());
-    const maxSize = Math.max(size.x, size.y, size.z, 0.001);
-    root.scale.multiplyScalar(2 / maxSize);
-    root.updateMatrixWorld(true);
-    const centered = new Box3().setFromObject(root, true);
-    const center = centered.getCenter(new Vector3());
-    root.position.sub(center);
-    root.position.y -= centered.min.y - center.y;
-    root.traverse((child) => {
-        const mesh = child as Mesh;
-        if (!mesh.isMesh) return;
-        mesh.castShadow = castShadow;
-        mesh.receiveShadow = receiveShadow;
-    });
-}
+export { normalizeModel } from "@/lib/canvas/previs/previs-model-normalization";
 
 export function applyActorReferenceMaterial(root: Object3D, baseColor: string) {
     const color = new Color(baseColor);

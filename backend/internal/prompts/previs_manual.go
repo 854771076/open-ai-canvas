@@ -21,6 +21,8 @@ type PrevisManualTopic struct {
 var previsManualTopics = []PrevisManualTopic{
 	{ID: "rules", Title: "行为规范", When: "第一次操作世界引擎前必读：先读后写、坐标与地面 0 米、用对工具、不确定就问、写完自检"},
 	{ID: "setup", Title: "搭场景", When: "搭外景、内景、街区城镇、批量道具"},
+	{ID: "sculpt", Title: "自由造型配方", When: "创建或修改可编辑自由造型、曲线管道、轮廓挤出、截面放样、凸包、实例散布与布尔切割；操作前必读"},
+	{ID: "mesh", Title: "三角网格建模", When: "没有合适模型、需要自己造型或精确顶点/三角面/面颜色；创建或修改 kind=mesh 前必读"},
 	{ID: "actors", Title: "摆人物与调度", When: "加人物、朝向、对话站位与轴线、原地动作"},
 	{ID: "move", Title: "人物移动", When: "A→B、沿路线、飞行与离地高度、速率与运动规律"},
 	{ID: "paths", Title: "用户画的轨迹", When: "用户提到画的轨迹、路径1、运镜轨迹，或要人物沿运镜轨迹走、镜头跟随"},

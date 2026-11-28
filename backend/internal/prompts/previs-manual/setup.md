@@ -3,7 +3,7 @@
 ## 流程
 1. 外景先定环境：`world_update`（`timeOfDay` 0–24 小时、`weather`、`ground`、`groundSize`、`horizon`）。`id` 用场景 ID。
 2. 成片的环境用一个布景：`object_add kind=layout layoutTemplate=… size=… density=… seed=…`。模板与尺寸范围见 `catalog.layouts`。
-3. 关键道具单独放：`object_add kind=prop propId=…`，参数化组件用 `params`（如楼层数、风格），键与范围见 `catalog.params`。
+3. 关键道具单独放：`object_add kind=prop propId=…`，只有 `catalog.params` 列出的道具可用 `params`。`car` 是固定道具，可调轿车使用 `shotloom-vehicle-sedan`。没有合适模型或需要特殊外形时，读 `manual=sculpt`／`manual=mesh` 自己建模，使用 `kind=sculpt` 或 `kind=mesh`，不要因缺素材停止。
 4. 一排、一圈、一片同类道具：`object_array_add`（`count`、`pattern=line/grid/ring/scatter`、`spacing`、`facing`、`vary`）。
 5. 室内：`propId=room` 搭房间壳（宽、深、高、窗、门），再放家具。
 

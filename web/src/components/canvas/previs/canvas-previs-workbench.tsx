@@ -26,6 +26,14 @@ import { dropPrevisObjectToGround, groundPrevisScene } from "@/lib/canvas/previs
 import { type PrevisObject, type PrevisLight, type PrevisShot, type PrevisHumanoidBone, type PrevisQuat, type PrevisKeyframeDeleteTarget, type PrevisKeyframeEasing, type PrevisRig, type PrevisShotSize, type PrevisActorProfile } from "@/types/previs";
 import { resolvePrevisPlacementAnchor, resolvePrevisPlacement, type PrevisGroundPoint } from "@/lib/canvas/previs/previs-placement";
 import { uploadMediaFile } from "@/services/file-storage";
+import { loadPrevisMeshSource } from "@/services/previs-mesh-source";
+import { assertCurrentUserSession, captureUserSession } from "@/lib/user-scope";
+import { createPrevisMeshSeed, exportPrevisMeshGLB } from "@/lib/canvas/previs/previs-mesh-conversion";
+import { assertPrevisMeshSceneSize, previsMeshBounds, replacePrevisMeshTopology, type PrevisEditableMesh } from "@/lib/canvas/previs/previs-mesh";
+import { PrevisMeshEditor } from "./previs-mesh-editor";
+import { PrevisSculptEditor } from "./previs-sculpt-editor";
+import { createPrevisSculptObject } from "@/lib/canvas/previs/previs-sculpt";
+import { parsePrevisModelBounds } from "@/lib/canvas/previs/previs-model-bounds";
 import { saveRemoteUserDataNow, localSavedRemotePendingMessage } from "@/services/user-data-sync";
 import {
     Camera,
@@ -88,7 +96,7 @@ import { PrevisViewport } from "./previs-viewport";
 import { CanvasPrevisOnboarding } from "@/components/canvas/previs/canvas-previs-onboarding";
 import { PrevisSequencer } from "./previs-sequencer";
 import { App, type MenuProps, Input, InputNumber, Button } from "antd";
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
 import { type PrevisPathDragPoint, type PrevisPathMenuTarget, type PrevisViewportHandle } from "@/components/canvas/previs/previs-viewport";
 import { PrevisPathMenu } from "./previs-path-menu";
 import { transferPrevisPathToActor, type PrevisPathCameraMode, type PrevisPathSource } from "@/lib/canvas/previs/previs-path-transfer";
@@ -147,6 +155,8 @@ export function CanvasPrevisWorkbench({
     onFlush?: () => void | Promise<void>;
 }) {
     const { message, modal } = App.useApp();
+    // 建模浮层使用应用主题，与 portal 继承的 CSS token 保持一致，避免深色应用中浅色控件文字消失。
+    const modelingTheme = useContext(ConfigProvider.ConfigContext).theme;
     // 世界引擎固定浅色：视口工具条等沿用画布组件的部件也用浅色画布主题，不跟随应用暗色模式。
     const theme = canvasThemes.light;
     const brandName = useAppearanceStore((state) => state.appearance.brandName);
@@ -163,6 +173,16 @@ export function CanvasPrevisWorkbench({
     const [history, setHistory] = useState<PrevisScene[]>([]);
     const [future, setFuture] = useState<PrevisScene[]>([]);
     const [saving, setSaving] = useState(false);
+    const [meshEditor, setMeshEditor] = useState<{ mesh: PrevisEditableMesh; source?: PrevisObject; sceneId: string } | null>(null);
+    const [sculptEditor, setSculptEditor] = useState<{ source?: PrevisObject; session: ReturnType<typeof captureUserSession> } | null>(null);
+    const meshLoadRef = useRef<AbortController | null>(null);
+    useEffect(() => {
+        setMeshEditor(null);
+        setSculptEditor(null);
+        return () => {
+            meshLoadRef.current?.abort();
+        };
+    }, [open, scene?.id]);
     const [screenshot, setScreenshot] = useState<{ output: Extract<PrevisCanvasExport, { kind: "screenshot" }>; url: string; added: boolean } | null>(null);
     const [capturing, setCapturing] = useState(false);
     const captureRequestRef = useRef<AbortController | null>(null);
@@ -653,7 +673,92 @@ export function CanvasPrevisWorkbench({
         setSelectedObjectId(object.id);
     };
 
-    const addModelAsset = (asset: ModelAsset) => addObject(createPrevisModel({ name: asset.title, assetId: asset.id, storageKey: asset.data.storageKey, url: asset.data.url, mimeType: asset.data.mimeType }));
+    const addModelAsset = (asset: ModelAsset) => {
+        const model = createPrevisModel({ name: asset.title, assetId: asset.id, storageKey: asset.data.storageKey, url: asset.data.url, mimeType: asset.data.mimeType });
+        const bounds = asset.metadata?.source === "previs-mesh" ? parsePrevisModelBounds(asset.metadata.modelBounds) : undefined;
+        addObject(bounds ? { ...model, meshEditable: true, modelBounds: bounds } : model);
+    };
+
+    const openMeshEditor = async (source?: PrevisObject) => {
+        const sceneId = draftRef.current?.id;
+        if (!sceneId) return;
+        meshLoadRef.current?.abort();
+        const controller = new AbortController();
+        meshLoadRef.current = controller;
+        try {
+            const session = captureUserSession();
+            const mesh = source ? await loadPrevisMeshSource(source, controller.signal) : createPrevisMeshSeed();
+            controller.signal.throwIfAborted();
+            assertCurrentUserSession(session);
+            if (draftRef.current?.id !== sceneId) return;
+            setMeshEditor({ mesh, source: source ? structuredClone(source) : undefined, sceneId });
+        } catch (error) {
+            if (!controller.signal.aborted) message.error(error instanceof Error ? error.message : "网格编辑器打开失败");
+        }
+    };
+
+    const openSculptEditor = (source?: PrevisObject) => {
+        try {
+            setSculptEditor({ source: source ? structuredClone(source) : undefined, session: captureUserSession() });
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : "造型编辑器打开失败");
+        }
+    };
+
+    const saveMesh = async (mesh: PrevisEditableMesh, name: string, signal: AbortSignal) => {
+        if (!meshEditor) throw new Error("网格编辑会话已关闭");
+        const session = captureUserSession();
+        const { source, sceneId } = meshEditor;
+        const assertTarget = () => {
+            signal.throwIfAborted();
+            assertCurrentUserSession(session);
+            if (draftRef.current?.id !== sceneId) throw new Error("场景已切换，请重新打开建模");
+            if (source && (source.meshEditable || source.kind === "mesh") && JSON.stringify(draftRef.current.objects.find((object) => object.id === source.id)) !== JSON.stringify(source)) throw new Error("原模型已被更新，请重新打开后再编辑");
+            if (source?.kind === "mesh") {
+                const current = draftRef.current;
+                assertPrevisMeshSceneSize({ ...current, objects: current.objects.map((item) => (item.id === source.id ? replacePrevisMeshTopology(item, mesh, name) : item)) });
+            }
+        };
+        assertTarget();
+        const blob = await exportPrevisMeshGLB(mesh);
+        assertTarget();
+        const uploaded = await uploadMediaFile(new File([blob], `${name}.glb`, { type: "model/gltf-binary" }), "model", undefined, { signal, expectedUserId: session.scope });
+        assertTarget();
+        const assetId = addAsset({
+            kind: "model",
+            title: name,
+            coverUrl: "",
+            tags: ["可编辑网格"],
+            source: "世界引擎",
+            data: { url: uploaded.url, storageKey: uploaded.storageKey, bytes: uploaded.bytes, mimeType: uploaded.mimeType, fileName: `${name}.glb` },
+            metadata: { source: "previs-mesh", modelBounds: previsMeshBounds(mesh) },
+        });
+        const object: PrevisObject = {
+            ...createPrevisModel({ name, assetId, storageKey: uploaded.storageKey, url: uploaded.url, mimeType: uploaded.mimeType }),
+            meshEditable: true,
+            modelBounds: previsMeshBounds(mesh),
+            ...(source ? { transform: structuredClone(source.transform) } : {}),
+        };
+        if (source?.kind === "mesh") {
+            // GLB 是本次编辑的独立素材快照；场景保留拓扑主数据，Agent 仍可读回继续修改。
+            commit((current) => ({ ...current, objects: current.objects.map((item) => (item.id === source.id ? replacePrevisMeshTopology(item, mesh, name) : item)) }));
+        } else if (source?.meshEditable) {
+            commit((current) => ({
+                ...current,
+                objects: current.objects.map((item) => (item.id === source.id ? { ...item, name, assetId, storageKey: object.storageKey, url: object.url, mimeType: object.mimeType, modelBounds: object.modelBounds, meshEditable: true } : item)),
+            }));
+        } else addObject(object);
+        setMeshEditor(null);
+        try {
+            await saveRemoteUserDataNow([]);
+            assertCurrentUserSession(session);
+            if (uploaded.pendingRemoteUpload) message.warning("网格已保存到本机，模型素材仍待上传");
+            else message.success("网格模型已加入素材库，场景由自动保存同步");
+        } catch (error) {
+            assertCurrentUserSession(session);
+            message.warning(localSavedRemotePendingMessage("网格已加入场景和本机素材库", error));
+        }
+    };
 
     const uploadModel = async (file?: File) => {
         if (!file || !/\.(glb|gltf)$/i.test(file.name)) return;
@@ -882,6 +987,7 @@ export function CanvasPrevisWorkbench({
      * 没有选中对象时的 Delete 仍然交还给浏览器。
      */
     const runShortcut = (action: PrevisShortcutAction): boolean => {
+        if (meshEditor || sculptEditor) return false;
         switch (action.kind) {
             case "transform-mode":
                 setTransformMode(action.mode);
@@ -1835,6 +1941,8 @@ export function CanvasPrevisWorkbench({
                             else if (action === "building") openAddDialog("prop", "base");
                             else if (action === "nature") openAddDialog("prop", "plant");
                             else if (action === "base") openAddDialog("prop", "base");
+                            else if (action === "mesh") void openMeshEditor();
+                            else if (action === "sculpt") openSculptEditor();
                             else if (action === "actor") openAddDialog("actor");
                             else if (action === "camera") openAddDialog("camera");
                             else if (action === "animate") mode === "animate" ? setMode("layout") : enterAnimationMode();
@@ -1977,7 +2085,9 @@ export function CanvasPrevisWorkbench({
                                                         ? `布景 · ${Math.round(obj.layout.size)}m`
                                                         : obj.kind === "prop"
                                                           ? (resolvePrevisCatalogProp(obj.propId)?.name ?? "道具")
-                                                          : `${obj.kind === "billboard" ? "背板" : obj.kind === "model" ? "模型" : obj.primitive === "plane" ? "平面" : obj.primitive === "sphere" ? "球体" : obj.primitive === "cylinder" ? "圆柱" : "几何体"} · ${obj.transform.scale.map((v) => v.toFixed(1)).join("×")}m`}
+                                                          : obj.kind === "mesh" && obj.mesh
+                                                            ? `三角网格 · ${obj.mesh.vertices.length} 顶点 / ${obj.mesh.triangles.length} 面`
+                                                            : `${obj.kind === "billboard" ? "背板" : obj.kind === "model" ? "模型" : obj.primitive === "plane" ? "平面" : obj.primitive === "sphere" ? "球体" : obj.primitive === "cylinder" ? "圆柱" : "几何体"} · ${obj.transform.scale.map((v) => v.toFixed(1)).join("×")}m`}
                                                 </span>
                                             </span>
                                         </button>
@@ -2316,6 +2426,8 @@ export function CanvasPrevisWorkbench({
                                     onToggleDrawPath={() => setTrajectoryDrawing((active) => !active)}
                                     onClearPath={() => updateObject(selectedObject.id, { keyframes: [], motionPath: undefined })}
                                     onDuplicate={() => duplicateObject(selectedObject.id)}
+                                    onEditMesh={() => void openMeshEditor(selectedObject)}
+                                    onEditSculpt={() => openSculptEditor(selectedObject)}
                                     onDelete={() => removeObject(selectedObject.id)}
                                 />
                             ) : selectedLight ? (
@@ -2545,6 +2657,38 @@ export function CanvasPrevisWorkbench({
                         onClose={closePointMenu}
                     />
                 ) : null}
+                <ConfigProvider theme={modelingTheme}>
+                    {meshEditor ? (
+                        <PrevisMeshEditor
+                            key={`${meshEditor.sceneId}:${meshEditor.source?.id ?? "new"}`}
+                            initial={meshEditor.mesh}
+                            name={meshEditor.source ? (meshEditor.source.meshEditable || meshEditor.source.kind === "mesh" ? meshEditor.source.name : `${meshEditor.source.name} 网格`) : "自由网格"}
+                            replacing={Boolean(meshEditor.source?.meshEditable || meshEditor.source?.kind === "mesh")}
+                            onClose={() => setMeshEditor(null)}
+                            onSave={saveMesh}
+                        />
+                    ) : null}
+                    {sculptEditor ? (
+                        <PrevisSculptEditor
+                            initial={sculptEditor.source?.sculpt}
+                            name={sculptEditor.source?.name}
+                            onClose={() => setSculptEditor(null)}
+                            onConfirm={(recipe, name) => {
+                                try {
+                                    assertCurrentUserSession(sculptEditor.session);
+                                    if (sculptEditor.source && JSON.stringify(draftRef.current?.objects.find((object) => object.id === sculptEditor.source!.id)) !== JSON.stringify(sculptEditor.source))
+                                        throw new Error("原造型已被更新，请导出当前配方后重新打开编辑");
+                                    const object = createPrevisSculptObject(recipe, name);
+                                    if (sculptEditor.source) updateObject(sculptEditor.source.id, { sculpt: object.sculpt, modelBounds: object.modelBounds, name });
+                                    else addObject(object);
+                                    setSculptEditor(null);
+                                } catch (error) {
+                                    message.error(error instanceof Error ? error.message : "自由造型生成失败");
+                                }
+                            }}
+                        />
+                    ) : null}
+                </ConfigProvider>
                 <PrevisAddDialog
                     open={addDialog.open}
                     initialKind={addDialog.kind}

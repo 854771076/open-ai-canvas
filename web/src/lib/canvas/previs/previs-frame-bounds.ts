@@ -1,4 +1,5 @@
 import { Vector3 } from "three";
+import { previsTransformedModelBox } from "./previs-model-bounds";
 
 import { previsMannequinExtents, resolvePrevisMannequinProfile } from "@/lib/canvas/previs/previs-mannequin";
 import { resolvePrevisPropSize } from "@/lib/canvas/previs/previs-prop-catalog";
@@ -17,6 +18,8 @@ export const PREVIS_MIN_ORBIT_DISTANCE = 0.7;
 
 /** 单个对象的近似世界包围盒；演员按体积而不是原点计算，避免相机推进到身体内部。 */
 export function resolvePrevisObjectBox(object: PrevisObject): { min: Vector3; max: Vector3 } {
+    const modelBox = previsTransformedModelBox(object, object.transform);
+    if (modelBox) return { min: modelBox.min, max: modelBox.max };
     const [x, y, z] = object.transform.position;
     const [sx, sy, sz] = object.transform.scale;
     const actor = object.kind === "actor" || object.primitive === "character";

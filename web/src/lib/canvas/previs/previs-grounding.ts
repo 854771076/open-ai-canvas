@@ -1,4 +1,5 @@
 import { previsPrimitiveHalfHeight } from "@/lib/canvas/previs/previs-prop-library";
+import { previsTransformedModelBox } from "./previs-model-bounds";
 import type { PrevisKeyframe, PrevisObject, PrevisScene, PrevisTransform, PrevisVec3 } from "@/types/previs";
 
 /**
@@ -21,7 +22,9 @@ export function isPrevisUprightObject(object: Pick<PrevisObject, "kind" | "primi
  * 对象原点允许的最低高度：中心原点的几何体（box/sphere/cylinder）是半高，
  * 底面正好贴地；演员、模型、背板等原点在底部或无法推断的对象是 0。
  */
-function previsGroundFloor(object: Pick<PrevisObject, "kind" | "primitive">, transform: PrevisTransform) {
+function previsGroundFloor(object: Pick<PrevisObject, "kind" | "primitive" | "modelBounds">, transform: PrevisTransform) {
+    const box = previsTransformedModelBox(object, transform, false);
+    if (box) return PREVIS_GROUND_Y - box.min.y;
     return PREVIS_GROUND_Y + (previsPrimitiveHalfHeight({ kind: object.kind, primitive: object.primitive, transform }) ?? 0);
 }
 
@@ -76,6 +79,6 @@ export function dropPrevisObjectToGround(object: PrevisObject): PrevisObject {
 }
 
 /** 对象当前底面是否已在地面上，供「贴地」按钮判断是否可点。 */
-export function isPrevisObjectOnGround(object: Pick<PrevisObject, "kind" | "primitive">, transform: PrevisTransform) {
+export function isPrevisObjectOnGround(object: Pick<PrevisObject, "kind" | "primitive" | "modelBounds">, transform: PrevisTransform) {
     return Math.abs(transform.position[1] - previsGroundFloor(object, transform)) < 0.001;
 }

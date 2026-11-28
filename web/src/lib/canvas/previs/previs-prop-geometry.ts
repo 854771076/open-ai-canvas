@@ -1,4 +1,4 @@
-import { Box3, Color, DoubleSide, MeshStandardMaterial, type Material } from "three";
+import { Box3, Color, DoubleSide, FrontSide, MeshStandardMaterial, type Material } from "three";
 
 import { previsHashString, previsRandom, PrevisPropKit, type PrevisPropMaterialKey, type PrevisPropParams, type PrevisPropPart } from "@/lib/canvas/previs/previs-prop-kit";
 import { PREVIS_BASE_PROP_BUILDERS } from "@/lib/canvas/previs/previs-props-base";
@@ -6,6 +6,7 @@ import { PREVIS_ANCIENT_PROP_BUILDERS } from "@/lib/canvas/previs/previs-props-a
 import { PREVIS_ANCIENT_EXTRA_PROP_BUILDERS } from "@/lib/canvas/previs/previs-props-ancient-2";
 import { PREVIS_MODERN_PROP_BUILDERS } from "@/lib/canvas/previs/previs-props-modern";
 import { PREVIS_NATURE_PROP_BUILDERS, type PrevisPropBuilder } from "@/lib/canvas/previs/previs-props-nature";
+import { buildShotloomPropParts, hasShotloomPropBuilder, SHOTLOOM_PROP_PREFIX } from "./previs-shotloom";
 
 const BUILDERS: Record<string, PrevisPropBuilder> = {
     ...PREVIS_NATURE_PROP_BUILDERS,
@@ -16,7 +17,7 @@ const BUILDERS: Record<string, PrevisPropBuilder> = {
 };
 
 export function hasPrevisPropBuilder(propId: string) {
-    return Boolean(BUILDERS[propId]);
+    return Boolean(BUILDERS[propId]) || hasShotloomPropBuilder(propId);
 }
 
 /** 布景里每种道具最多用这么多种变体，控制实例化的 draw call 数。 */
@@ -24,12 +25,12 @@ export const PREVIS_LAYOUT_VARIANTS = 4;
 
 const partsCache = new Map<string, PrevisPropPart[]>();
 
-/** 参数的稳定序列化：键排序，数值保留两位，作为缓存键的一部分。 */
+/** 参数按键排序；保留原始精度，生活道具的毫米级步进不能共用厘米级缓存。 */
 export function previsPropParamsKey(params?: PrevisPropParams) {
     if (!params) return "";
     return Object.keys(params)
         .sort()
-        .map((key) => `${key}=${typeof params[key] === "number" ? Number((params[key] as number).toFixed(2)) : params[key]}`)
+        .map((key) => `${key}=${params[key]}`)
         .join(",");
 }
 
@@ -38,6 +39,7 @@ export function previsPropParamsKey(params?: PrevisPropParams) {
  * 参数化组件拖动滑杆会产生很多中间值，缓存按最近使用淘汰，避免无限增长。
  */
 export function buildPrevisPropParts(propId: string, variant = 0, params?: PrevisPropParams): PrevisPropPart[] {
+    if (propId.startsWith(SHOTLOOM_PROP_PREFIX) && !hasShotloomPropBuilder(propId)) throw new Error(`未知 Shotloom 静态道具：${propId}`);
     const key = `${propId}:${variant}:${previsPropParamsKey(params)}`;
     const cached = partsCache.get(key);
     if (cached) {
@@ -49,6 +51,11 @@ export function buildPrevisPropParts(propId: string, variant = 0, params?: Previ
         const oldest = partsCache.keys().next().value as string;
         partsCache.get(oldest)?.forEach((part) => part.geometry.dispose());
         partsCache.delete(oldest);
+    }
+    if (hasShotloomPropBuilder(propId)) {
+        const parts = buildShotloomPropParts(propId, params);
+        partsCache.set(key, parts);
+        return parts;
     }
     const kit = new PrevisPropKit(previsRandom(previsHashString(propId) ^ Math.imul(variant + 1, 0x9e3779b1)), params);
     const builder = BUILDERS[propId];
@@ -128,7 +135,7 @@ export function previsPropMaterial(key: PrevisPropMaterialKey, accentColor?: str
         emissiveIntensity: selected ? 0.32 : (spec.emissiveIntensity ?? 0),
         transparent: spec.opacity !== undefined,
         opacity: spec.opacity ?? 1,
-        side: spec.doubleSide ? DoubleSide : undefined,
+        side: spec.doubleSide ? DoubleSide : FrontSide,
     });
     materialCache.set(cacheKey, material);
     return material;

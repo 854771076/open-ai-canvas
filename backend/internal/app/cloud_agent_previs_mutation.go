@@ -109,6 +109,9 @@ type cloudAgentPrevisPatchOperation struct {
 	Crowd          *bool    `json:"crowd"`
 	// 参数化组件参数（building 的 floors/width/style…）；键与范围见 cloud_agent_previs_params.go。
 	Params map[string]any `json:"params"`
+	// RawMessage 区分省略与显式 null；null 配方必须报错，不能成为静默无操作。
+	Sculpt json.RawMessage `json:"sculpt"`
+	Mesh   json.RawMessage `json:"mesh"`
 
 	// object_array_add：批量摆放同一道具。
 	Count   *int     `json:"count"`
@@ -157,12 +160,12 @@ func cloudAgentPrevisSceneCreateSchema() map[string]any {
 	return map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			"canvasSnapshotHash": map[string]any{"type": "string", "description": "previs_scene_read 场景目录返回的 canvasSnapshotHash；创建前画布必须未变化"},
+			"canvasSnapshotHash": map[string]any{"type": "string", "description": "previs_scene_read 的画布快照；创建前不得变化"},
 			"sceneId":            map[string]any{"type": "string", "maxLength": 80, "description": "新的稳定场景 ID"},
-			"title":              map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit, "description": "场景标题"},
-			"templateId":         map[string]any{"type": "string", "enum": []string{"empty", "monologue", "dialogue", "blocking", "product", "action_chase", "interior", "crowd"}, "description": "模板：empty/monologue/dialogue/blocking/product/action_chase/interior/crowd"},
-			"nodeId":             map[string]any{"type": "string", "maxLength": 80, "description": "可选的世界引擎视频工作站节点 ID；省略时由 sceneId 派生稳定 ID"},
-			"nodeTitle":          map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit, "description": "可选的世界引擎视频工作站节点标题"},
+			"title":              map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit},
+			"templateId":         map[string]any{"type": "string", "enum": []string{"empty", "monologue", "dialogue", "blocking", "product", "action_chase", "interior", "crowd"}},
+			"nodeId":             map[string]any{"type": "string", "maxLength": 80, "description": "工作站节点ID；省略由sceneId派生"},
+			"nodeTitle":          map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit},
 		},
 		"required":             []string{"canvasSnapshotHash", "sceneId", "title", "templateId"},
 		"additionalProperties": false,
@@ -176,15 +179,17 @@ func cloudAgentPrevisPatchOperationSchema() map[string]any {
 		"id":                 map[string]any{"type": "string", "maxLength": 80, "description": "目标或新建资源 ID"},
 		"name":               map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit},
 		"title":              map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit},
-		"kind":               map[string]any{"type": "string", "enum": []string{"prop", "layout", "actor", "primitive"}},
+		"kind":               map[string]any{"type": "string", "enum": []string{"prop", "layout", "actor", "primitive", "sculpt", "mesh"}},
+		"mesh":               cloudAgentPrevisMeshSchema(),
+		"sculpt":             map[string]any{"type": "object", "description": "仅kind=sculpt；先读manual=sculpt，配方整体替换。", "properties": map[string]any{"version": map[string]any{"type": "integer", "enum": []int{1}}, "parts": map[string]any{"type": "array", "minItems": 1, "maxItems": 48, "items": map[string]any{"type": "object"}}}, "required": []string{"version", "parts"}, "additionalProperties": false},
 		"primitive":          map[string]any{"type": "string", "enum": []string{"box", "sphere", "cylinder", "plane", "character"}},
-		"archetype":          map[string]any{"type": "string", "enum": []string{"adult", "child", "elderly", "man", "woman", "monster"}, "description": "演员体型原型"},
+		"archetype":          map[string]any{"type": "string", "enum": []string{"adult", "child", "elderly", "man", "woman", "monster"}},
 		"characterAssetId":   map[string]any{"type": "string", "maxLength": 120},
 		"characterVersionId": map[string]any{"type": "string", "maxLength": 120},
 		"referenceNodeId":    map[string]any{"type": "string", "maxLength": 120},
 		"characterName":      map[string]any{"type": "string", "maxLength": cloudAgentPrevisTextLimit},
-		"pose":               map[string]any{"type": "string", "enum": []string{"stand", "sit", "walk", "run", "wave", "think", "fight", "kick", "throw", "push", "reach", "arms_crossed", "phone", "bow", "kneel_single", "kneel_double", "lean", "squat", "hands_hips", "neutral", "t_pose"}, "description": "演员姿态"},
-		"color":              map[string]any{"type": "string", "maxLength": 9, "pattern": `^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`, "description": "十六进制颜色"},
+		"pose":               map[string]any{"type": "string", "enum": []string{"stand", "sit", "walk", "run", "wave", "think", "fight", "kick", "throw", "push", "reach", "arms_crossed", "phone", "bow", "kneel_single", "kneel_double", "lean", "squat", "hands_hips", "neutral", "t_pose"}},
+		"color":              map[string]any{"type": "string", "maxLength": 9, "pattern": `^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`},
 		"parentId":           map[string]any{"type": "string", "maxLength": 80},
 		"visible":            map[string]any{"type": "boolean"},
 		"motion":             map[string]any{"type": "string", "enum": cloudAgentPrevisMotionIDs, "description": "actor_motion_add 动作；time=开始秒，duration=时长，intensity=幅度0.2-2；remove 用 keyframeId 传动作 id"},
@@ -474,7 +479,7 @@ func cloudAgentPrevisCanvas(repo *repository.Repository, userID, canvasID string
 func cloudAgentPrevisScenesSize(scenes []map[string]any) error {
 	encoded, err := json.Marshal(scenes)
 	if err != nil || len(encoded) > cloudAgentPrevisDocumentLimit {
-		return BadAuthRequest("世界引擎场景数据超过限制")
+		return cloudAgentFieldError("operations", "document_limit", "世界引擎场景数据超过 1 MiB 限制，请减少网格面数或场景内容后重试")
 	}
 	return nil
 }
@@ -574,12 +579,34 @@ func cloudAgentPrevisValidateScene(scene map[string]any) error {
 		return BadAuthRequest("世界引擎场景必须包含有效的 activeShotId")
 	}
 	for id, object := range objectByID {
+		if err := cloudAgentPrevisValidateModelMetadata(object); err != nil {
+			return err
+		}
 		if err := cloudAgentPrevisValidateText(stringValue(object["name"]), "导演对象名称", cloudAgentPrevisTextLimit, true); err != nil {
 			return err
 		}
-		if err := cloudAgentPrevisValidateEnum(stringValue(object["kind"]), "导演对象类型", "primitive", "model", "actor", "billboard", "prop", "layout"); err != nil {
+		if err := cloudAgentPrevisValidateEnum(stringValue(object["kind"]), "导演对象类型", "primitive", "model", "actor", "billboard", "prop", "layout", "sculpt", "mesh"); err != nil {
 			// 整场景校验：任何一个对象不合法都会拒绝整次补丁，必须指明是哪个对象，否则 Agent 会误以为是自己要改的对象有问题。
 			return BadAuthRequest(fmt.Sprintf("场景中的对象 %s（%s）类型 %q 不受当前服务支持；这不是本次操作对象的问题，请把错误原样告知用户（可能需要更新后端）", id, truncateRunes(stringValue(object["name"]), 40), stringValue(object["kind"])))
+		}
+		if stringValue(object["kind"]) == "sculpt" {
+			normalized, err := cloudAgentPrevisNormalizeSculpt(object["sculpt"])
+			if err != nil {
+				return err
+			}
+			object["sculpt"] = normalized
+		} else if object["sculpt"] != nil {
+			return BadAuthRequest("sculpt 配方只适用于 kind=sculpt")
+		}
+		if stringValue(object["kind"]) == "mesh" {
+			normalized, err := cloudAgentPrevisNormalizeMesh(object["mesh"])
+			if err != nil {
+				return err
+			}
+			object["mesh"] = normalized
+			object["modelBounds"], _ = cloudAgentPrevisMeshBounds(normalized)
+		} else if object["mesh"] != nil {
+			return cloudAgentFieldError("mesh", "invalid_kind", "mesh 拓扑只适用于 kind=mesh")
 		}
 		if stringValue(object["kind"]) == "prop" {
 			if _, ok := cloudAgentPrevisFindProp(stringValue(object["propId"])); !ok {
@@ -1189,11 +1216,11 @@ func cloudAgentPrevisApplyTransform(item map[string]any, operation cloudAgentPre
 func cloudAgentPrevisGroundScene(scene map[string]any) {
 	for _, object := range creationMaps(scene["objects"]) {
 		if transform, ok := object["transform"].(map[string]any); ok {
-			cloudAgentPrevisGroundPosition(transform)
+			cloudAgentPrevisGroundObjectTransform(object, transform)
 		}
 		for _, keyframe := range creationMaps(object["keyframes"]) {
 			if transform, ok := keyframe["transform"].(map[string]any); ok {
-				cloudAgentPrevisGroundPosition(transform)
+				cloudAgentPrevisGroundObjectTransform(object, transform)
 			}
 		}
 		if stringValue(object["kind"]) != "actor" && stringValue(object["primitive"]) != "character" {
@@ -1481,8 +1508,8 @@ func cloudAgentPrevisApplyObjectPatch(objects *[]map[string]any, operation cloud
 			}
 			break
 		}
-		if operation.Kind != "primitive" && operation.Kind != "actor" {
-			return cloudAgentApprovalPreviewItem{}, BadAuthRequest("新增对象 kind 只支持 prop、layout、actor 或 primitive")
+		if operation.Kind != "primitive" && operation.Kind != "actor" && operation.Kind != "sculpt" && operation.Kind != "mesh" {
+			return cloudAgentApprovalPreviewItem{}, BadAuthRequest("新增对象 kind 只支持 prop、layout、actor、primitive、sculpt 或 mesh")
 		}
 		primitive := operation.Primitive
 		if primitive == "" {
@@ -1503,7 +1530,7 @@ func cloudAgentPrevisApplyObjectPatch(objects *[]map[string]any, operation cloud
 			return cloudAgentApprovalPreviewItem{}, err
 		}
 		position, rotation, scale := []float64{0, 0.5, 0}, []float64{0, 0, 0}, []float64{1, 1, 1}
-		if operation.Kind == "actor" || primitive == "character" {
+		if operation.Kind == "actor" || primitive == "character" || operation.Kind == "sculpt" || operation.Kind == "mesh" {
 			// 演员原点在脚底：省略 position 时站在地面上，而不是悬在几何体默认的 0.5m。
 			position = []float64{0, 0, 0}
 		}
@@ -1553,6 +1580,25 @@ func cloudAgentPrevisApplyObjectPatch(objects *[]map[string]any, operation cloud
 			defaultColor = actorColors[actorCount%len(actorColors)]
 		}
 		item := map[string]any{"id": operation.ID, "name": name, "kind": operation.Kind, "primitive": primitive, "transform": map[string]any{"position": cloudAgentPrevisVec3(position), "rotation": cloudAgentPrevisVec3(rotation), "scale": cloudAgentPrevisVec3(scale)}, "color": defaultColor, "visible": true, "castShadow": true, "receiveShadow": true, "keyframes": []any{}}
+		if operation.Kind == "sculpt" {
+			normalized, err := cloudAgentPrevisNormalizeSculpt(operation.Sculpt)
+			if err != nil {
+				return cloudAgentApprovalPreviewItem{}, err
+			}
+			item["sculpt"] = normalized
+			delete(item, "primitive")
+		} else if operation.Sculpt != nil {
+			return cloudAgentApprovalPreviewItem{}, BadAuthRequest("sculpt 配方只适用于 kind=sculpt")
+		}
+		if operation.Kind == "mesh" {
+			normalized, err := cloudAgentPrevisNormalizeMesh(operation.Mesh)
+			if err != nil {
+				return cloudAgentApprovalPreviewItem{}, err
+			}
+			item["mesh"] = normalized
+			item["modelBounds"], _ = cloudAgentPrevisMeshBounds(normalized)
+			delete(item, "primitive")
+		}
 		if operation.Color != nil {
 			item["color"] = *operation.Color
 		}
@@ -1589,6 +1635,29 @@ func cloudAgentPrevisApplyObjectPatch(objects *[]map[string]any, operation cloud
 	case "object_update":
 		if existing == nil {
 			return cloudAgentApprovalPreviewItem{}, BadAuthRequest("要更新的对象不存在")
+		}
+		if operation.Mesh != nil {
+			if stringValue(existing["kind"]) != "mesh" {
+				return cloudAgentApprovalPreviewItem{}, cloudAgentFieldError("mesh", "invalid_kind", "mesh 拓扑只适用于 kind=mesh；创建网格请用 object_add")
+			}
+			normalized, err := cloudAgentPrevisNormalizeMesh(operation.Mesh)
+			if err != nil {
+				return cloudAgentApprovalPreviewItem{}, err
+			}
+			existing["mesh"] = normalized
+			existing["modelBounds"], _ = cloudAgentPrevisMeshBounds(normalized)
+		}
+		if operation.Sculpt != nil {
+			if stringValue(existing["kind"]) != "sculpt" {
+				return cloudAgentApprovalPreviewItem{}, BadAuthRequest("sculpt 配方只适用于 kind=sculpt")
+			}
+			normalized, err := cloudAgentPrevisNormalizeSculpt(operation.Sculpt)
+			if err != nil {
+				return cloudAgentApprovalPreviewItem{}, err
+			}
+			existing["sculpt"] = normalized
+			// 配方变化后浏览器重新计算精确几何范围，旧缓存不能继续用于贴地。
+			delete(existing, "modelBounds")
 		}
 		if err := cloudAgentPrevisApplyName(existing, operation.Name, "对象名称"); err != nil {
 			return cloudAgentApprovalPreviewItem{}, err
@@ -1702,6 +1771,15 @@ func cloudAgentPrevisFindByID(items []map[string]any, id string) map[string]any 
 }
 
 func cloudAgentPrevisApplyPatchOperation(scene map[string]any, operation cloudAgentPrevisPatchOperation, index int) (cloudAgentApprovalPreviewItem, error) {
+	if operation.Mesh != nil && (operation.Type != "object_add" && operation.Type != "object_update" || operation.Type == "object_add" && operation.Kind != "mesh") {
+		return cloudAgentApprovalPreviewItem{}, cloudAgentFieldError("mesh", "invalid_operation", "mesh 仅可用于 kind=mesh 的 object_add/object_update")
+	}
+	if operation.Sculpt != nil && operation.Type != "object_add" && operation.Type != "object_update" {
+		return cloudAgentApprovalPreviewItem{}, BadAuthRequest("sculpt 仅可用于 object_add/object_update")
+	}
+	if operation.Sculpt != nil && operation.Type == "object_add" && operation.Kind != "sculpt" {
+		return cloudAgentApprovalPreviewItem{}, BadAuthRequest("sculpt 配方只适用于 kind=sculpt")
+	}
 	if err := cloudAgentPrevisValidateText(operation.Type, fmt.Sprintf("operations[%d].type", index), 40, true); err != nil {
 		return cloudAgentApprovalPreviewItem{}, err
 	}

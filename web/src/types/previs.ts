@@ -1,4 +1,13 @@
+import type { PrevisSculptRecipe } from "./previs-sculpt";
+
 export type PrevisVec3 = [number, number, number];
+/** Agent 与手动编辑器共用的有界三角拓扑；kind=mesh 时作为场景主数据保存。 */
+export type PrevisMeshData = {
+    version: 1;
+    vertices: PrevisVec3[];
+    triangles: Array<[number, number, number]>;
+    colors: string[];
+};
 export type PrevisQuat = [number, number, number, number];
 
 export type PrevisActorArchetype = "adult" | "child" | "elderly" | "man" | "woman" | "monster";
@@ -18,7 +27,7 @@ export type PrevisTransform = {
 
 export type PrevisPrimitiveKind = "box" | "sphere" | "cylinder" | "plane" | "character";
 /** prop = 程序化道具目录里的单个道具；layout = 按模板和种子展开的整片布景（街区、城镇、园林）。 */
-export type PrevisObjectKind = "primitive" | "model" | "actor" | "billboard" | "prop" | "layout";
+export type PrevisObjectKind = "primitive" | "model" | "actor" | "billboard" | "prop" | "layout" | "sculpt" | "mesh";
 
 export type PrevisWeather = "clear" | "cloudy" | "overcast" | "rain" | "storm" | "snow" | "fog";
 export type PrevisGroundType = "grass" | "forest" | "sand" | "redsoil" | "snow" | "water" | "city" | "warm" | "white" | "gray";
@@ -313,6 +322,13 @@ export type PrevisObject = {
     storageKey?: string;
     url?: string;
     mimeType?: string;
+    /** 网格编辑器生成的静态 GLB 保持米制尺寸，不再执行普通导入模型的两米归一化。 */
+    meshEditable?: boolean;
+    /** 模型局部空间的真实包围盒，用于网格素材的取景、放置和贴地。 */
+    modelBounds?: { min: PrevisVec3; max: PrevisVec3 };
+    /** 自由造型的可编辑主数据；几何仅为配方的派生产物。 */
+    sculpt?: PrevisSculptRecipe;
+    mesh?: PrevisMeshData;
     keyframes: PrevisKeyframe[];
     motionPath?: PrevisMotionPath;
     /** kind=prop 时的程序化道具目录 ID；见 previs-prop-catalog.ts。 */

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import type { PrevisObject, PrevisScene } from "@/types/previs";
 import { PrevisPropVisual } from "./previs-prop-view";
+import { PrevisSculptVisual } from "./previs-sculpt-view";
 
 /**
  * 画布卡片的轻量场景缩略图：固定俯视正交相机，只渲染简化几何体。
@@ -22,11 +23,14 @@ export function PrevisMiniViewport({ scene }: { scene: PrevisScene }) {
                 <directionalLight position={[4, 8, 4]} intensity={1.1} />
                 <Suspense fallback={null}>
                     <gridHelper args={[20, 20, "#65738a", "#2b3544"]} />
-                    {visibleObjects.map((object) => <MiniObject key={object.id} object={object} />)}
+                    {visibleObjects.map((object) => (
+                        <MiniObject key={object.id} object={object} />
+                    ))}
                 </Suspense>
             </Canvas>
             <div className="pointer-events-none absolute inset-x-3 top-3 flex items-center justify-between text-[var(--fs-label)] font-semibold uppercase tracking-[0.16em] text-white/55">
-                <span>Top view</span><span>{activeShot?.name || t("canvasC.previsMini.noShot")}</span>
+                <span>Top view</span>
+                <span>{activeShot?.name || t("canvasC.previsMini.noShot")}</span>
             </div>
             <div className="pointer-events-none absolute inset-x-3 bottom-3 flex items-center justify-between gap-2 rounded-lg border border-white/12 bg-[#0d1118cc] px-3 py-2 text-[var(--fs-label)] font-medium text-white/80 backdrop-blur-md">
                 <Stat value={visibleObjects.length} label={t("canvasC.previsMini.objects")} />
@@ -66,6 +70,13 @@ function MiniObject({ object }: { object: PrevisObject }) {
         return (
             <group position={position} rotation={rotation} scale={scale}>
                 <PrevisPropVisual object={object} selected={false} />
+            </group>
+        );
+    }
+    if (object.kind === "mesh") {
+        return (
+            <group position={object.transform.position} rotation={object.transform.rotation} scale={scale}>
+                <PrevisSculptVisual object={object} />
             </group>
         );
     }
@@ -111,5 +122,10 @@ function MiniObject({ object }: { object: PrevisObject }) {
 }
 
 function Stat({ value, label }: { value: number | string; label: string }) {
-    return <span className="inline-flex min-w-0 items-center gap-1"><b className="text-white">{value}</b><span>{label}</span></span>;
+    return (
+        <span className="inline-flex min-w-0 items-center gap-1">
+            <b className="text-white">{value}</b>
+            <span>{label}</span>
+        </span>
+    );
 }

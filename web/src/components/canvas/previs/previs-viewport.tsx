@@ -89,6 +89,7 @@ import { evaluatePrevisTravel } from "@/lib/canvas/previs/previs-travel";
 import { evaluatePrevisCamera, samplePrevisCameraPath } from "@/lib/canvas/previs/previs-camera-moves";
 import { PrevisLayoutVisual, PrevisPropVisual } from "./previs-prop-view";
 import { PrevisWorldView } from "./previs-world-view";
+import { PrevisSculptVisual } from "./previs-sculpt-view";
 
 export type PrevisOrbitControls = ComponentRef<typeof OrbitControls>;
 
@@ -2119,6 +2120,7 @@ function PrevisObjectVisual({
         return <PrevisModel object={object} selected={selected} selectedBone={selectedBone} playhead={playhead} onSelectBone={onSelectBone} onBoneTransform={onBoneTransform} onActorRigReady={onActorRigReady} onLoadStateChange={onLoadStateChange} />;
     if (object.kind === "billboard" && object.url) return <PrevisBillboard object={object} selected={selected} />;
     if (object.kind === "prop" && object.propId) return <PrevisPropVisual object={object} selected={selected} />;
+    if (object.kind === "sculpt" || object.kind === "mesh") return <PrevisSculptVisual object={object} />;
     if (object.kind === "layout" && object.layout) return <PrevisLayoutVisual object={object} selected={selected} playhead={playhead} onPickInstance={onPickLayoutInstance} />;
     const material = <meshStandardMaterial color={selected ? "#ffcc00" : object.color} roughness={0.68} metalness={0.05} emissive={selected ? "#ffaa00" : "#000000"} emissiveIntensity={selected ? 0.4 : 0} />;
     return (
@@ -2270,7 +2272,7 @@ function PrevisModel({
                             // 采纳后 source 的 Object3D 层级可被 GC，共享 GPU 资源由 owned clone 持有，
                             // 最终只在 clone 的 cleanup 里释放一次；这里绝不 dispose source。
                             clone = SkeletonUtils.clone(gltf.scene);
-                            normalizeModel(clone, object.castShadow, object.receiveShadow);
+                            if (!object.meshEditable) normalizeModel(clone, object.castShadow, object.receiveShadow);
                             const nextRig = inferPrevisRig(
                                 clone,
                                 gltf.animations.map((clip) => clip.name),

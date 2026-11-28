@@ -1,5 +1,6 @@
 import type { PrevisObject, PrevisVec3 } from "../../../types/previs";
 import { resolvePrevisPropSize } from "@/lib/canvas/previs/previs-prop-catalog";
+import { previsTransformedModelBox } from "./previs-model-bounds";
 
 export type PrevisFootprint = { width: number; depth: number };
 export type PrevisPlacementCandidate = { footprint: PrevisFootprint; position: PrevisVec3 };
@@ -26,7 +27,9 @@ function baseFootprint(object: Pick<PrevisObject, "kind" | "primitive" | "propId
 }
 
 /** XZ 平面占位：只用 scale 的 x/z，取绝对值以容忍负缩放；不参与 Y 判断。 */
-export function previsObjectFootprint(object: Pick<PrevisObject, "kind" | "primitive" | "transform"> & Partial<Pick<PrevisObject, "propId" | "params">>): PrevisFootprint {
+export function previsObjectFootprint(object: Pick<PrevisObject, "kind" | "primitive" | "transform"> & Partial<Pick<PrevisObject, "propId" | "params" | "modelBounds">>): PrevisFootprint {
+    const box = previsTransformedModelBox(object, object.transform, false);
+    if (box) return { width: Math.max(0.05, box.max.x - box.min.x), depth: Math.max(0.05, box.max.z - box.min.z) };
     const base = baseFootprint(object);
     const scaleX = Math.abs(object.transform?.scale?.[0] ?? 1);
     const scaleZ = Math.abs(object.transform?.scale?.[2] ?? 1);

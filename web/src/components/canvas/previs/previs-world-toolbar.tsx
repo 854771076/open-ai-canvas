@@ -4,7 +4,7 @@ import { Building2, Camera, Clapperboard, Film, Globe2, Keyboard, Layers, ListTr
  * 世界引擎左侧悬浮工具条：按工作流分组「搭世界 → 拍戏 → 出片」，每个入口直达对应面板或添加页。
  * 只负责触发，不持有状态；激活态由工作台传入。
  */
-export type PrevisWorldToolbarAction = "world" | "building" | "nature" | "base" | "layout" | "actor" | "camera" | "shot" | "animate" | "clay" | "depth" | "list" | "shortcuts";
+export type PrevisWorldToolbarAction = "world" | "building" | "nature" | "base" | "sculpt" | "mesh" | "layout" | "actor" | "camera" | "shot" | "animate" | "clay" | "depth" | "list" | "shortcuts";
 
 type ToolbarItem = { action: PrevisWorldToolbarAction; label: string; icon: LucideIcon; hint: string };
 
@@ -17,6 +17,8 @@ const GROUPS: Array<{ title: string; items: ToolbarItem[] }> = [
             { action: "building", label: "建筑", icon: Building2, hint: "可调层数和尺寸的楼房、古建、塔楼" },
             { action: "nature", label: "花木", icon: Trees, hint: "树木、花草、山石" },
             { action: "base", label: "组件", icon: Shapes, hint: "道路、墙体、地面、台阶、房间等基础组件，可批量排布" },
+            { action: "mesh", label: "建模", icon: Shapes, hint: "顶点、边、面编辑；挤出、拆分、合并与独立模型保存" },
+            { action: "sculpt", label: "造型", icon: Shapes, hint: "配方部件、镜像、曲线、放样与布尔切割" },
             { action: "actor", label: "角色", icon: UserRound, hint: "加入演员或群众" },
         ],
     },

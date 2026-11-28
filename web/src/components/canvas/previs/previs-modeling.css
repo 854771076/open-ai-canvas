@@ -1,0 +1,148 @@
+.previs-modeling {
+    color: var(--foreground);
+    background: var(--background);
+}
+.previs-modeling__error {
+    display: block;
+    width: 220px;
+    padding: 12px;
+    color: var(--status-error);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-caption);
+}
+.previs-modeling__header,
+.previs-modeling__toolbar,
+.previs-modeling__footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+}
+.previs-modeling__header h2 {
+    margin: 0;
+    font-size: var(--fs-heading);
+}
+.previs-modeling__header span,
+.previs-modeling__note,
+.previs-modeling__footer span {
+    color: var(--text-secondary);
+    font-size: var(--fs-caption);
+}
+.previs-modeling__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+}
+.previs-modeling__preview {
+    position: relative;
+    height: min(64vh, 650px);
+    min-height: 340px;
+    overflow: hidden;
+}
+.previs-modeling__inspector {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    max-height: min(64vh, 650px);
+    overflow-y: auto;
+    border-left: 1px solid var(--border);
+}
+.previs-modeling__inspector label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: var(--fs-caption);
+}
+.previs-modeling__inspector p {
+    margin: 0;
+}
+.previs-modeling__axes {
+    display: flex;
+    gap: 4px;
+}
+.previs-modeling__axes .ant-input-number {
+    min-width: 0;
+    width: 33%;
+}
+.previs-modeling__points {
+    display: grid;
+    gap: 6px;
+}
+.previs-modeling__point-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    align-items: center;
+}
+.previs-modeling__point-row > .ant-input-number {
+    flex: 1;
+    min-width: 0;
+    width: 0;
+}
+.previs-modeling__section {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+.previs-modeling__section-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+.previs-modeling__section-fields .ant-input-number {
+    width: 100%;
+}
+.previs-modeling__hint {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    pointer-events: none;
+    font-size: var(--fs-caption);
+    color: var(--color-neutral-700);
+}
+.previs-modeling__footer {
+    justify-content: flex-end;
+    border-bottom: 0;
+    border-top: 1px solid var(--border);
+}
+.previs-modeling__footer span {
+    margin-right: auto;
+}
+.previs-modeling__toggle {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+}
+.previs-modeling__toggle[aria-pressed="true"] {
+    color: var(--workspace-accent);
+    background: var(--workspace-accent-soft);
+}
+.previs-modeling__box-layer {
+    position: absolute;
+    inset: 0;
+    cursor: crosshair;
+    touch-action: none;
+}
+.previs-modeling__rectangle {
+    position: absolute;
+    border: 1px solid var(--workspace-accent);
+    background: var(--workspace-accent-soft);
+    pointer-events: none;
+}
+@media (max-width: 700px) {
+    .previs-modeling__body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .previs-modeling__preview {
+        height: 40vh;
+        min-height: 250px;
+    }
+    .previs-modeling__inspector {
+        max-height: 28vh;
+        border-left: 0;
+        border-top: 1px solid var(--border);
+    }
+}

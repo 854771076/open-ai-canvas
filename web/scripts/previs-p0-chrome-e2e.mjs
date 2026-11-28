@@ -323,6 +323,20 @@ async function connectCdp(cdpPort) {
         }
         if (!box) {
             console.log(`      (click target not interactable: ${label})`);
+            const diagnostic = await evaluate(`(() => {
+                const el = ${locatorExpression};
+                if (!(el instanceof HTMLElement)) return { missing: true };
+                const rect = el.getBoundingClientRect();
+                const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
+                const ancestors = [];
+                for (let node = el; node; node = node.parentElement) {
+                    const style = getComputedStyle(node);
+                    ancestors.push({ tag: node.tagName, class: node.className, opacity: style.opacity, display: style.display, visibility: style.visibility, pointerEvents: style.pointerEvents, animations: node.getAnimations().map(a => ({ pending: a.pending, playState: a.playState })) });
+                }
+                return { target: el.outerHTML.slice(0, 300), rect: rect.toJSON(), viewport: [innerWidth, innerHeight], hit: document.elementFromPoint(x, y)?.outerHTML.slice(0, 300), ancestors };
+            })()`);
+            // 点击失败保留遮挡、动画与坐标证据，不能把真实不可交互静默改成合成点击。
+            console.log(`      click diagnostic: ${JSON.stringify(diagnostic)}`);
             return false;
         }
         const point = { x: box.x, y: box.y, button: "left", pointerType: "mouse" };

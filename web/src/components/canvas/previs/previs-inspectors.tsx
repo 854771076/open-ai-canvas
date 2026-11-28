@@ -201,6 +201,8 @@ export function ObjectInspector({
     onToggleDrawPath,
     onClearPath,
     onDuplicate,
+    onEditMesh,
+    onEditSculpt,
     onDelete,
     markers = [],
     sketchPaths = [],
@@ -230,6 +232,8 @@ export function ObjectInspector({
     onToggleDrawPath: () => void;
     onClearPath: () => void;
     onDuplicate: () => void;
+    onEditMesh?: () => void;
+    onEditSculpt?: () => void;
     onDelete: () => void;
 }) {
     const motionClips = object.motionClips || [];
@@ -455,8 +459,26 @@ export function ObjectInspector({
                     ) : null}
                     {object.kind === "layout" ? <PrevisLayoutInspectorGroup object={object} onUpdate={onUpdate} /> : null}
                     {object.kind === "prop" ? <PrevisPropVariantGroup object={object} onUpdate={onUpdate} /> : null}
+                    {object.kind === "sculpt" && onEditSculpt ? (
+                        <InspectorGroup title="自由造型">
+                            <Button block size="small" onClick={onEditSculpt}>
+                                编辑部件与配方
+                            </Button>
+                        </InspectorGroup>
+                    ) : null}
+                    {onEditMesh && !isActor && object.kind !== "layout" && object.kind !== "billboard" ? (
+                        <InspectorGroup title="网格建模">
+                            <Button block size="small" onClick={onEditMesh}>
+                                {object.meshEditable || object.kind === "mesh" ? "编辑顶点／边／面" : "复制为可编辑网格"}
+                            </Button>
+                        </InspectorGroup>
+                    ) : null}
                     <InspectorGroup title="外观">
-                        {object.kind === "layout" ? null : <ColorRow value={object.color} swatches={isActor ? PREVIS_ACTOR_SWATCHES : undefined} label={isActor ? "角色十六进制颜色" : "十六进制颜色"} onChange={(color) => onUpdate({ color })} />}
+                        {object.kind !== "layout" && object.kind !== "sculpt" && object.kind !== "mesh" && !object.meshEditable ? (
+                            <ColorRow value={object.color} swatches={isActor ? PREVIS_ACTOR_SWATCHES : undefined} label={isActor ? "角色十六进制颜色" : "十六进制颜色"} onChange={(color) => onUpdate({ color })} />
+                        ) : null}
+                        {object.kind === "sculpt" ? <p className="previs-inspector-note">通过「编辑部件与配方」调整各部件颜色和材质。</p> : null}
+                        {object.meshEditable || object.kind === "mesh" ? <p className="previs-inspector-note">网格使用模型中保存的面颜色。</p> : null}
                         <div className="previs-inspector-toggles">
                             <label className="previs-inspector-toggle">
                                 <span>可见</span>

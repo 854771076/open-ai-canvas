@@ -391,16 +391,15 @@
         "additionalProperties": false,
         "properties": {
           "canvasSnapshotHash": {
-            "description": "previs_scene_read 场景目录返回的 canvasSnapshotHash；创建前画布必须未变化",
+            "description": "previs_scene_read 的画布快照；创建前不得变化",
             "type": "string"
           },
           "nodeId": {
-            "description": "可选的世界引擎视频工作站节点 ID；省略时由 sceneId 派生稳定 ID",
+            "description": "工作站节点ID；省略由sceneId派生",
             "maxLength": 80,
             "type": "string"
           },
           "nodeTitle": {
-            "description": "可选的世界引擎视频工作站节点标题",
             "maxLength": 160,
             "type": "string"
           },
@@ -410,7 +409,6 @@
             "type": "string"
           },
           "templateId": {
-            "description": "模板：empty/monologue/dialogue/blocking/product/action_chase/interior/crowd",
             "enum": [
               "empty",
               "monologue",
@@ -424,7 +422,6 @@
             "type": "string"
           },
           "title": {
-            "description": "场景标题",
             "maxLength": 160,
             "type": "string"
           }
@@ -442,7 +439,7 @@
   },
   {
     "function": {
-      "description": "审批后应用语义补丁，最多32项；先读 snapshotHash。支持场景、镜头、对象、相机、灯光、动画；角色绑定须匹配画布角色卡，动画时间不超镜头时长。object_motion_path_set/clear 替换/清空对象全部 transform 关键帧。实物用 kind=prop+propId(+params)，N 个同类用 object_array_add，演员 A→B 走跑飞闪现用 actor_travel，运镜用 camera_move+technique(+subjectId)，多段大师手法用 recipe，街区城镇用 kind=layout，时间天气用 world_update；目录与参数见 previs_scene_read.catalog。禁止原始 JSON、URL、storage key。",
+      "description": "审批后应用语义补丁，最多32项；先读 snapshotHash。角色绑定须匹配画布角色卡，动画不超镜头时长。object_motion_path_set/clear 替换/清空对象全部 transform 关键帧。目录实物用 kind=prop+propId，params 仅按 catalog.params；没有合适模型时自己造：kind=sculpt+sculpt 或 kind=mesh+mesh，先读 manual=sculpt/mesh。N 个同类用 object_array_add；演员 A→B 用 actor_travel；运镜用 camera_move+technique/recipe；街区城镇 kind=layout，时间天气 world_update。禁止任意场景 JSON、URL、storage key。",
       "name": "previs_apply_patch",
       "parameters": {
         "additionalProperties": false,
@@ -462,7 +459,6 @@
                   "type": "number"
                 },
                 "archetype": {
-                  "description": "演员体型原型",
                   "enum": [
                     "adult",
                     "child",
@@ -525,7 +521,6 @@
                   "type": "string"
                 },
                 "color": {
-                  "description": "十六进制颜色",
                   "maxLength": 9,
                   "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$",
                   "type": "string"
@@ -643,7 +638,9 @@
                     "prop",
                     "layout",
                     "actor",
-                    "primitive"
+                    "primitive",
+                    "sculpt",
+                    "mesh"
                   ],
                   "type": "string"
                 },
@@ -667,6 +664,64 @@
                     "ambient"
                   ],
                   "type": "string"
+                },
+                "mesh": {
+                  "additionalProperties": false,
+                  "description": "仅 kind=mesh；先读 manual=mesh。顶点/三角面/面颜色的完整拓扑，object_update 整体替换。",
+                  "properties": {
+                    "colors": {
+                      "items": {
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "type": "string"
+                      },
+                      "maxItems": 40000,
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "triangles": {
+                      "items": {
+                        "items": {
+                          "maximum": 19999,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "maxItems": 3,
+                        "minItems": 3,
+                        "type": "array"
+                      },
+                      "maxItems": 40000,
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "version": {
+                      "enum": [
+                        1
+                      ],
+                      "type": "integer"
+                    },
+                    "vertices": {
+                      "items": {
+                        "items": {
+                          "maximum": 10000,
+                          "minimum": -10000,
+                          "type": "number"
+                        },
+                        "maxItems": 3,
+                        "minItems": 3,
+                        "type": "array"
+                      },
+                      "maxItems": 20000,
+                      "minItems": 3,
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "vertices",
+                    "triangles",
+                    "colors"
+                  ],
+                  "type": "object"
                 },
                 "motion": {
                   "description": "actor_motion_add 动作；time=开始秒，duration=时长，intensity=幅度0.2-2；remove 用 keyframeId 传动作 id",
@@ -749,7 +804,6 @@
                   "type": "number"
                 },
                 "pose": {
-                  "description": "演员姿态",
                   "enum": [
                     "stand",
                     "sit",
@@ -824,6 +878,31 @@
                   "maxItems": 3,
                   "minItems": 3,
                   "type": "array"
+                },
+                "sculpt": {
+                  "additionalProperties": false,
+                  "description": "仅kind=sculpt；先读manual=sculpt，配方整体替换。",
+                  "properties": {
+                    "parts": {
+                      "items": {
+                        "type": "object"
+                      },
+                      "maxItems": 48,
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "version": {
+                      "enum": [
+                        1
+                      ],
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "parts"
+                  ],
+                  "type": "object"
                 },
                 "seed": {
                   "maximum": 999999999,

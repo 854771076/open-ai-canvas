@@ -1,0 +1,1952 @@
+[
+  {
+    "name": "blob",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "blob",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            -180,
+            720,
+            -45.12345
+          ],
+          "color": "ABC"
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "blob",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            180,
+            0,
+            -45.1234
+          ],
+          "color": "#aabbcc",
+          "roundness": 0.5,
+          "taper": 0
+        }
+      ]
+    }
+  },
+  {
+    "name": "box",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "roundness": 0.1
+        }
+      ]
+    }
+  },
+  {
+    "name": "cylinder",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "cylinder",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "taper": 0.5
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "cylinder",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "taper": 0.5
+        }
+      ]
+    }
+  },
+  {
+    "name": "torus",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "torus",
+          "size": [
+            1,
+            1,
+            0.1
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "torus",
+          "size": [
+            1,
+            1,
+            0.1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8"
+        }
+      ]
+    }
+  },
+  {
+    "name": "frame",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "frame",
+          "size": [
+            1,
+            1,
+            0.1
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "frame",
+          "size": [
+            1,
+            1,
+            0.1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "border": 0.15
+        }
+      ]
+    }
+  },
+  {
+    "name": "lathe",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "lathe",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "profile": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "lathe",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "profile": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ]
+          ],
+          "smooth": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "tube",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "tube",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "path": [
+            [
+              -0.4,
+              -0.4,
+              0
+            ],
+            [
+              0,
+              0.4,
+              0
+            ],
+            [
+              0.4,
+              -0.4,
+              0
+            ]
+          ],
+          "thickness": 0.1
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "tube",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "path": [
+            [
+              -0.4,
+              -0.4,
+              0
+            ],
+            [
+              0,
+              0.4,
+              0
+            ],
+            [
+              0.4,
+              -0.4,
+              0
+            ]
+          ],
+          "thickness": 0.1,
+          "taper": 0,
+          "closed": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "extrude",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "extrude",
+          "size": [
+            1,
+            1,
+            0.1
+          ],
+          "outline": [
+            [
+              -0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              0.5
+            ],
+            [
+              -0.5,
+              0.5
+            ]
+          ],
+          "holes": [
+            [
+              [
+                -0.1,
+                -0.1
+              ],
+              [
+                -0.1,
+                0.1
+              ],
+              [
+                0.1,
+                0.1
+              ],
+              [
+                0.1,
+                -0.1
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "extrude",
+          "size": [
+            1,
+            1,
+            0.1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "outline": [
+            [
+              -0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              0.5
+            ],
+            [
+              -0.5,
+              0.5
+            ]
+          ],
+          "holes": [
+            [
+              [
+                -0.1,
+                -0.1
+              ],
+              [
+                -0.1,
+                0.1
+              ],
+              [
+                0.1,
+                0.1
+              ],
+              [
+                0.1,
+                -0.1
+              ]
+            ]
+          ],
+          "roundness": 0.1
+        }
+      ]
+    }
+  },
+  {
+    "name": "loft",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "loft",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "sections": [
+            {
+              "y": 0,
+              "w": 0.5,
+              "d": 0.5
+            },
+            {
+              "y": 1,
+              "w": 1,
+              "d": 1
+            }
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "loft",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "sections": [
+            {
+              "y": 0,
+              "w": 0.5,
+              "d": 0.5,
+              "x": 0,
+              "z": 0,
+              "roundness": 0.25
+            },
+            {
+              "y": 1,
+              "w": 1,
+              "d": 1,
+              "x": 0,
+              "z": 0,
+              "roundness": 0.25
+            }
+          ],
+          "smooth": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "convex",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "convex",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "seed": 42
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "convex",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "seed": 42,
+          "facetCount": 16,
+          "facets": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "convex-points",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "convex",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "points": [
+            [
+              -0.5,
+              -0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              -0.5,
+              -0.5
+            ],
+            [
+              0,
+              0.5,
+              0
+            ],
+            [
+              0,
+              0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "convex",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "points": [
+            [
+              -0.5,
+              -0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              -0.5,
+              -0.5
+            ],
+            [
+              0,
+              0.5,
+              0
+            ],
+            [
+              0,
+              0,
+              0.5
+            ]
+          ],
+          "facets": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "scatter",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "item": "leaf",
+          "count": 20
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "item": "leaf",
+          "count": 20,
+          "seed": 0,
+          "spread": "ground"
+        }
+      ]
+    }
+  },
+  {
+    "name": "surfaces-mirror-cut",
+    "valid": true,
+    "input": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true,
+          "material": "wood",
+          "finish": "satin",
+          "detail": {
+            "amount": 0.1
+          },
+          "gradient": {
+            "color": "F80"
+          }
+        },
+        {
+          "id": "hole",
+          "shape": "cylinder",
+          "size": [
+            0.2,
+            2,
+            0.2
+          ],
+          "parent": "body",
+          "op": "subtract"
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "mirror": true,
+          "roundness": 0.1,
+          "material": "wood",
+          "finish": "satin",
+          "detail": {
+            "amount": 0.1,
+            "scale": 4,
+            "seed": 0
+          },
+          "gradient": {
+            "color": "#ff8800",
+            "axis": "y",
+            "from": 0,
+            "to": 1
+          }
+        },
+        {
+          "id": "hole",
+          "shape": "cylinder",
+          "size": [
+            0.2,
+            2,
+            0.2
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "color": "#c2c6c8",
+          "parent": "body",
+          "taper": 0,
+          "op": "subtract"
+        }
+      ]
+    }
+  },
+  {
+    "name": "unknown-root",
+    "valid": false,
+    "input": {
+      "parts": [],
+      "extra": 1
+    }
+  },
+  {
+    "name": "empty",
+    "valid": false,
+    "input": {
+      "parts": []
+    }
+  },
+  {
+    "name": "wrong-version",
+    "valid": false,
+    "input": {
+      "version": 2,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "unknown-shape",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "mesh",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "shape-field",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "taper": 1
+        }
+      ]
+    }
+  },
+  {
+    "name": "unknown-part",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "url": "https://example.com"
+        }
+      ]
+    }
+  },
+  {
+    "name": "parent-missing",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "missing"
+        }
+      ]
+    }
+  },
+  {
+    "name": "cycle",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "a",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "b"
+        },
+        {
+          "id": "b",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "a"
+        }
+      ]
+    }
+  },
+  {
+    "name": "nested-mirror",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "a",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "b",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "a",
+          "mirror": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "cutter-root",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "op": "subtract"
+        }
+      ]
+    }
+  },
+  {
+    "name": "scatter-cut",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "a",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 20,
+          "item": "blade"
+        },
+        {
+          "id": "b",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "a",
+          "op": "subtract"
+        }
+      ]
+    }
+  },
+  {
+    "name": "cutter-child",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "a",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "a",
+          "op": "subtract"
+        },
+        {
+          "id": "c",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "b"
+        }
+      ]
+    }
+  },
+  {
+    "name": "flat-convex",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "convex",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "points": [
+            [
+              -0.5,
+              -0.5,
+              0
+            ],
+            [
+              0.5,
+              -0.5,
+              0
+            ],
+            [
+              0.5,
+              0.5,
+              0
+            ],
+            [
+              -0.5,
+              0.5,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "tube-coincident",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "tube",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "path": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "thickness": 0.1
+        }
+      ]
+    }
+  },
+  {
+    "name": "lathe-descends",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "lathe",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "profile": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              0.5
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "extrude-cross",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "extrude",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "outline": [
+            [
+              -0.5,
+              -0.5
+            ],
+            [
+              0.5,
+              0.5
+            ],
+            [
+              -0.5,
+              0.5
+            ],
+            [
+              0.5,
+              -0.5
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "hole-outside",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "extrude",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "outline": [
+            [
+              -0.5,
+              -0.5
+            ],
+            [
+              0,
+              -0.5
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              -0.5,
+              0
+            ]
+          ],
+          "holes": [
+            [
+              [
+                0.1,
+                0.1
+              ],
+              [
+                0.3,
+                0.1
+              ],
+              [
+                0.2,
+                0.3
+              ]
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "loft-side",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "loft",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "sections": [
+            {
+              "y": 0,
+              "w": 1,
+              "d": 1,
+              "x": 0.5
+            },
+            {
+              "y": 1,
+              "w": 1,
+              "d": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "detail-scatter",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 1,
+          "item": "blade",
+          "detail": {
+            "amount": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "torus-thick",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "torus",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "frame-wide",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "frame",
+          "size": [
+            1,
+            1,
+            0.1
+          ],
+          "border": 0.5
+        }
+      ]
+    }
+  },
+  {
+    "name": "bad-material",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "material": "gold"
+        }
+      ]
+    }
+  },
+  {
+    "name": "bad-gradient",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "gradient": {
+            "color": "red"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "mirror-budget",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "part-0",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-1",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-2",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-3",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-4",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-5",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-6",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-7",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-8",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-9",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-10",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-11",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-12",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-13",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-14",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-15",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-16",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-17",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-18",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-19",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-20",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-21",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-22",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-23",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        },
+        {
+          "id": "part-24",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "mirror": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "depth-budget",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "part-0",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "part-1",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-0"
+        },
+        {
+          "id": "part-2",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-1"
+        },
+        {
+          "id": "part-3",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-2"
+        },
+        {
+          "id": "part-4",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-3"
+        },
+        {
+          "id": "part-5",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-4"
+        },
+        {
+          "id": "part-6",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-5"
+        },
+        {
+          "id": "part-7",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-6"
+        },
+        {
+          "id": "part-8",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-7"
+        },
+        {
+          "id": "part-9",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "parent": "part-8"
+        }
+      ]
+    }
+  },
+  {
+    "name": "scatter-budget",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "part-0",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 4000,
+          "item": "blade"
+        },
+        {
+          "id": "part-1",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 4000,
+          "item": "blade"
+        },
+        {
+          "id": "part-2",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 4000,
+          "item": "blade"
+        },
+        {
+          "id": "part-3",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 4000,
+          "item": "blade"
+        }
+      ]
+    }
+  },
+  {
+    "name": "duplicate-id",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "part-0",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "part-0",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "mirror-scatter-budget",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "part-0",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 4000,
+          "item": "blade",
+          "mirror": true
+        },
+        {
+          "id": "part-1",
+          "shape": "scatter",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "count": 4000,
+          "item": "blade",
+          "mirror": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "large-finite-rotation",
+    "valid": true,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "rotation": [
+            1e+308,
+            -1e+308,
+            0
+          ]
+        }
+      ]
+    },
+    "normalized": {
+      "version": 1,
+      "parts": [
+        {
+          "id": "body",
+          "shape": "box",
+          "size": [
+            1,
+            1,
+            1
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            116,
+            -116,
+            0
+          ],
+          "color": "#c2c6c8",
+          "roundness": 0.1
+        }
+      ]
+    }
+  },
+  {
+    "name": "frame-rounded-degenerate",
+    "valid": false,
+    "input": {
+      "parts": [
+        {
+          "id": "body",
+          "shape": "frame",
+          "size": [
+            1,
+            1,
+            0.1
+          ],
+          "border": 0.499999
+        }
+      ]
+    }
+  },
+  {"name":"multi-token-root-key","valid":false,"input":{"version parts":1,"parts":[{"id":"body","shape":"box","size":[1,1,1]}]}},
+  {"name":"multi-token-part-key","valid":false,"input":{"parts":[{"id":"body","shape":"box","size":[1,1,1],"id shape":"invalid"}]}},
+  {"name":"multi-token-material","valid":false,"input":{"parts":[{"id":"body","shape":"box","size":[1,1,1],"material":"clay wood"}]}},
+  {"name":"multi-token-scatter-choice","valid":false,"input":{"parts":[{"id":"body","shape":"scatter","size":[1,1,1],"item":"blade tuft","count":1}]}}
+]

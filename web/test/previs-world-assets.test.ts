@@ -88,18 +88,17 @@ describe("previs parametric components and arrays", () => {
         }
     });
 
-    test("every parametric prop builds at its min and max values", async () => {
-        const { PREVIS_PROP_CATALOG: catalog } = await import("@/lib/canvas/previs/previs-prop-catalog");
-        const { buildPrevisPropParts: build } = await import("@/lib/canvas/previs/previs-prop-geometry");
-        for (const prop of catalog.filter((item) => item.params)) {
+    // 目录扩展后逐项报告边界失败，避免把整个目录的累计耗时误当成单个模型超时。
+    for (const prop of PREVIS_PROP_CATALOG.filter((item) => item.params)) {
+        test(`parametric prop ${prop.id} builds at its min and max values`, () => {
             for (const edge of ["min", "max"] as const) {
                 const params = Object.fromEntries(prop.params!.map((def) => [def.key, def.type === "number" ? def[edge] : def.options[edge === "min" ? 0 : def.options.length - 1].value]));
-                const parts = build(prop.id, 0, params);
+                const parts = buildPrevisPropParts(prop.id, 0, params);
                 expect(parts.length).toBeGreaterThan(0);
                 for (const part of parts) expect((part.geometry.getAttribute("position").array as Float32Array).every(Number.isFinite)).toBe(true);
             }
-        }
-    });
+        });
+    }
 
     test("array expands into independent, evenly spaced objects with varied floors", async () => {
         const { expandPrevisArray } = await import("@/lib/canvas/previs/previs-array");
